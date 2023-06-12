@@ -9,4 +9,4 @@ import uvicorn
 from server.api_v1_0.server import app
 
 if __name__ == '__main__':
-    uvicorn.run("main:app", host="0.0.0.0", port=8001, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=52520, reload=True)
