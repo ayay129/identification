@@ -45,7 +45,7 @@ def change_format(url):
         return False
     image_bytes = resp.content
     url_path = urlparse(url).path
-    if url_path.lower().endswith((".png", ",jpg", "jpeg", "bmp")):
+    if url_path.lower().endswith((".png", ".jpg", ".jpeg", ".bmp")):
         image = image_procedure(image_bytes)
     elif url_path.lower().endswith(".pdf"):
         image = pdf_to_image_stream(image_bytes)
