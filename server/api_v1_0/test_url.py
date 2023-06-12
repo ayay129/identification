@@ -7,15 +7,17 @@
 import json
 
 import requests
-
+import io
+from core.identification import pdf_to_image_stream
+from config import baidu_client
 # 身份证
-# urls = [
+urls = [
     # "https://upload.cdn.galaxy-immi.com/crm/production/files/6058/1657076550912.jpg",
     #     "https://upload.cdn.galaxy-immi.com/crm/production/files/6058/1657076559505.jpg",
     #     "https://upload.cdn.galaxy-immi.com/crm/production/files/1659612739360.jpg",
     #     "https://upload.cdn.galaxy-immi.com/crm/production/files/1659612748670.jpg",
     #     "https://upload.cdn.galaxy-immi.com/crm/production/files/1659665753619.jpg",
-#         "https://upload.cdn.galaxy-immi.com/crm/production/files/7891/1660562337192.pdf"
+        "https://upload.cdn.galaxy-immi.com/crm/production/files/7891/1660562337192.pdf"]
 # #
 # 港澳通行证
 # urls = ["https://upload.cdn.galaxy-immi.com/crm/production/files/6058/1656294519622.jpg",
@@ -24,13 +26,13 @@ import requests
 #         "https://upload.cdn.galaxy-immi.com/crm/production/files/7888/1660919894772.png"]
 #
 # 出生证
-urls = [
-        # "https://upload.cdn.galaxy-immi.com/crm/production/files/7861/1660620969527.pdf",
-        "https://upload.cdn.galaxy-immi.com/crm/production/files/7868/1660874135227.jpg",
-        "https://upload.cdn.galaxy-immi.com/crm/production/files/7870/1662184804891.jpg"]
+# urls = ["https://upload.cdn.galaxy-immi.com/crm/production/files/7861/1660620969527.pdf"]
+        # "https://upload.cdn.galaxy-immi.com/crm/production/files/7868/1660874135227.jpg",
+        # "https://upload.cdn.galaxy-immi.com/crm/production/files/7870/1662184804891.jpg"]
 
 # 护照
-# urls = ["https://upload.cdn.galaxy-immi.com/crm/production/files/22YH003986/1661686939300.jpg",
+# urls = [
+        # "https://upload.cdn.galaxy-immi.com/crm/production/files/22YH003986/1661686939300.jpg",
         # "https://upload.cdn.galaxy-immi.com/crm/production/files/7951/1661005683353.pdf"
         # ]
 
@@ -50,11 +52,18 @@ def transfer(url2t):
 for url in urls:
     links = transfer(url)
     # print(links)
-    # resp = requests.post(url="http://127.0.0.1:8001/document/identification", json={
-    resp = requests.post(url="http://172.18.18.13:52520/document/identification", json={
+    resp = requests.post(url="http://127.0.0.1:8001/document/identification", json={
         "url": links,
-        "input_type": 2})
-    print(json.dumps(resp.text))
+        "input_type": 1})
     print(resp.text)
-# resp = transfer("https://upload.cdn.galaxy-immi.com/crm/production/files/6058/1657076550912.jpg")
-# print(resp)
+
+# for url in urls:
+#     links = transfer(url)
+#     images = pdf_to_image_stream(pdf_url=links)
+#     resp = baidu_client.birthCertificate(image=images)
+#     print(resp)
+
+# with open("./你好.png","rb") as f:
+#     images = f.read()
+#     resp = baidu_client.birthCertificate(image=images)
+#     print(resp)

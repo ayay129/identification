@@ -9,9 +9,8 @@ from fastapi import FastAPI, Response
 import pydantic
 import requests
 from typing import Optional, List
-import json
-from core.identification import deal_password,deal_id_card,deal_HkMcau_permit,deal_birth_cert
-import uvicorn
+from core.exception import ReqType, RETCODE, err_msg, RespType
+from core.identification import deal_passport, deal_id_card, deal_HkMcau_permit, deal_birth_cert, change_format
 
 app = FastAPI()
 
@@ -32,45 +31,53 @@ class CardResponse(pydantic.BaseModel):
 # 'words_result': {'姓名': {'location': {'top': 101, 'left': 184, 'width': 86, 'height': 38}, 'words': '孙么'}, '民族': {'location': {'top': 167, 'left': 362, 'width': 26, 'height': 29}, 'words': '汉'}, '住址': {'location': {'top': 281, 'left': 184, 'width': 304, 'height': 71}, 'words': '内蒙古通辽市科尔沁区永清十委14组179号'}, '公民身份号码': {'location': {'top': 428, 'left': 343, 'width': 396, 'height': 38}, 'words': '152301199802185042'}, '出生': {'location': {'top': 222, 'left': 180, 'width': 304, 'height': 30}, 'words': '19980218'}, '性别': {'location': {'top': 166, 'left': 190, 'width': 27, 'height': 31}, 'words': '女'}}, 'words_result_num': 6, 'idcard_number_type': 1, 'image_status': 'normal', 'risk_type': 'screen', 'log_id': 1666721773649062414}
 @app.post("/document/identification")
 async def identity(request: PostData):
+    image_bytes = change_format(url=request.url)
+    if not image_bytes:
+        return CardResponse(code=RETCODE.IMAGE_FORMAT_ERROR, type=RespType.Unknown,
+                            message=err_msg[RETCODE.IMAGE_FORMAT_ERROR])
     # 身份证
-    if request.input_type == 1:
-        response_data = deal_id_card(url=request.url)
+    if request.input_type == ReqType.IdentityCard:
+        response_data = deal_id_card(image_bytes)
         if response_data is None:
-            return CardResponse(code=1, type=0, message="Recognize Failure. Cause Unknown")
+            return CardResponse(code=RETCODE.ERROR, type=RespType.Unknown, message=err_msg[RETCODE.ERROR])
         elif len(response_data.keys()) == 6:
-            return CardResponse(code=0, type=6, message="Success", data=response_data)
+            return CardResponse(code=RETCODE.OK, type=RespType.IdentityCardFront, message=err_msg[RETCODE.OK],
+                                data=response_data)
         elif len(response_data.keys()) == 3:
-            return CardResponse(code=0, type=7, message="Success", data=response_data)
+            return CardResponse(code=RETCODE.OK, type=RespType.IdentityCardBack, message=err_msg[RETCODE.OK],
+                                data=response_data)
         else:
-            return CardResponse(code=0, type=1, message="Success", data=response_data)
+            return CardResponse(code=RETCODE.OK, type=RespType.IdentityCard, message=err_msg[RETCODE.OK],
+                                data=response_data)
     # 出生证
-    elif request.input_type == 2:
-        response_data = deal_birth_cert(url=request.url)
+    elif request.input_type == ReqType.BirthCert:
+        response_data = deal_birth_cert(image_bytes)
         if response_data is None:
-            return CardResponse(code=1, type=0, message="Recognize Failure. Cause Unknown")
-        return CardResponse(code=0, type=2, message="Success", data=response_data)
+            return CardResponse(code=RETCODE.ERROR, type=0, message=err_msg[RETCODE.ERROR])
+        return CardResponse(code=RETCODE.OK, type=RespType.BirthCert, message=err_msg[RETCODE.OK], data=response_data)
     # 护照
-    elif request.input_type == 3:
-        response_data = deal_password(url=request.url)
+    elif request.input_type == ReqType.PassPort:
+        response_data = deal_passport(image_bytes)
         if response_data is None:
-            return CardResponse(code=1, type=0, message="Recognize Failure. Cause Unknown")
-        return CardResponse(code=0, type=3, message="Success", data=response_data)
+            return CardResponse(code=RETCODE.ERROR, type=0, message=err_msg[RETCODE.ERROR])
+        return CardResponse(code=RETCODE.OK, type=RespType.PassPort, message=err_msg[RETCODE.OK], data=response_data)
     # 港澳通行证
-    elif request.input_type == 4:
+    elif request.input_type == ReqType.HkMacaoPermit:
         # 转二进制
         try:
-            response_data = deal_HkMcau_permit(url=request.url)
+            response_data = deal_HkMcau_permit(image_bytes)
         except Exception as e:
             return
         if response_data is None:
-            return CardResponse(code=1, type=0, message="Recognize Failure. Cause Unknown")
-        return CardResponse(code=0, type=4, message="Success", data=response_data)
+            return CardResponse(code=RETCODE.ERROR, type=0, message=err_msg[RETCODE.ERROR])
+        return CardResponse(code=RETCODE.OK, type=RespType.HkMacaoPermit, message=err_msg[RETCODE.OK],
+                            data=response_data)
     # 学位证
-    elif request.input_type == 5:
+    elif request.input_type == ReqType.Degree:
         pass
     # 非范围内
     else:
-        pass
+        return CardResponse(code=RETCODE.OUT_OF_SUPPORT, message=err_msg[RETCODE.OUT_OF_SUPPORT], data={})
 
 
 def transfer(url2t):
@@ -79,7 +86,3 @@ def transfer(url2t):
     response = requests.get(url=url, params=data)
     if 200 == response.status_code:
         return response.json()['data']['url']
-
-
-
-

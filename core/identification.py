@@ -11,53 +11,99 @@ import requests
 from pdf2image import convert_from_bytes
 from PIL import Image
 from docx import Document
+from urllib.parse import urlparse
 
 
-def pdf_to_image_stream(pdf_url):
-    resp = requests.get(pdf_url)
-    if resp.status_code != 200:
-        return None
-    images = convert_from_bytes(resp.content)
+def pdf_to_image_stream(image_bytes):
+    images = convert_from_bytes(image_bytes, poppler_path="D:\\Program Files (x86)\\poppler-23.05.0\\Library\\bin")
     # 多页拼接
-    if len(images) > 2:
-        return None
+    # if len(images) > 2:
+    #     images = images[:2]
+    images = images[:1]
+    total_height = sum(image.height for image in images)
+    max_width = max(image.width for image in images)
+    # 拼接图,底图
+    concatenated_image = Image.new("RGB", (max_width, total_height), "white")
+    y_offset = 0
+    # 自上而下拼接
+    for image in images:
+        concatenated_image.paste(image, (0, y_offset))
+        y_offset += image.height
+    # 调整大小
+    target_height = 800
+    target_width = 600
+    resize_image = concatenated_image.resize((target_width, target_height), resample=Image.LANCZOS)
+    stream = io.BytesIO()
+    resize_image.save(stream, format="PNG", quality=90)
+    image_stream = stream.getvalue()
+    return image_stream
+
+
+def change_format(url):
+    resp = requests.get(url)
+    if resp.status_code != 200:
+        return False
+    image_bytes = resp.content
+    url_path = urlparse(url).path
+    if url_path.lower().endswith((".png", ",jpg", "jpeg", "bmp")):
+        image = image_procedure(image_bytes)
+    elif url_path.lower().endswith(".pdf"):
+        image = pdf_to_image_stream(image_bytes)
+    elif url_path.lower().endswith(".doc"):
+        image = word_to_image(image_bytes)
     else:
-        total_height = sum(image.height for image in images)
-        max_width = max(image.width for image in images)
-        # 拼接图,底图
-        concatenated_image = Image.new("RGB", (max_width, total_height), "white")
-        y_offset = 0
-        # 自上而下拼接
-        for image in images:
-            concatenated_image.paste(image, (0, y_offset))
-            y_offset += image.height
+        return False
+    return image
+
+
+def image_procedure(image_bytes):
+    image = Image.open(io.BytesIO(image_bytes))
+    # 获取图像的原始尺寸
+    original_width, original_height = image.size
+
+    # 判断图像是否需要调整大小
+    if original_width > 800 or original_height > 600:
+        # 定义目标尺寸
+        target_width = 800
+        target_height = 600
+
+        # 调整图像尺寸
+        resized_image = image.resize((target_width, target_height))
+    else:
+        # 图像不需要调整大小
+        resized_image = image
+    stream = io.BytesIO()
+    resized_image.save(stream, format="PNG", quality=90)
+    image_stream = stream.getvalue()
+    return image_stream
+
+
+def word_to_image(image_bytes):
+    document = Document(io.BytesIO(image_bytes))
+    sections = document.sections
+    # if len(sections) > 2:
+    #     sections = sections[:2]
+    sections = sections[:1]
+    total_height = sum(section.page_height for section in sections)
+    max_width = max(section.page_width for section in sections)
+    # 拼接图,底图
+    concatenated_image = Image.new('RGB', (max_width, total_height), 'white')
+    y_offset = 0
+    for section in sections:
+        image = Image.new('RGB', (int(section.page_width * 2.8), int(section.page_height * 2.8)), 'white')
+        concatenated_image.paste(image, (0, y_offset))
+        y_offset += image.height
     return concatenated_image
 
 
-def word_to_image(word_url):
-    resp = requests.get(word_url)
-    if resp.status_code != 200:
-        return None
-    document = Document(io.BytesIO(resp.content))
-    if len(document.sections):
-        return
-    else:
-        total_height = sum(section.page_height for section in document.sections)
-        max_width = max(section.page_width for section in document.sections)
-        # 拼接图,底图
-        concatenated_image = Image.new('RGB', (max_width, total_height), 'white')
-        y_offset = 0
-        for section in document.sections:
-            image = Image.new('RGB', (int(section.page_width * 2.8), int(section.page_height * 2.8)), 'white')
-            concatenated_image.paste(image, (0, y_offset))
-            y_offset += image.height
-        return concatenated_image
-
-
-def deal_id_card(url):
+def deal_id_card(data, image=True):
     response_data = {}
-    resp = baidu_client.multi_idcardUrl(url=url, options={"detect_risk": "true", "detect_quality": "true",
-                                                          "detect_direction": "true"})
+    if image:
+        resp = baidu_client.multi_idcard(image=data, options={"detect_risk": "true", "detect_quality": "true",
+                                                              "detect_direction": "true"})
+    else:
+        resp = baidu_client.multi_idcardUrl(url=data, options={"detect_risk": "true", "detect_quality": "true",
+                                                               "detect_direction": "true"})
     results = resp["words_result"]
     if not results:
         # return CardResponse(code=0, type=1, message="Recognize Failure. Cause Unknown")
@@ -85,9 +131,12 @@ def deal_id_card(url):
     return response_data
 
 
-def deal_birth_cert(url):
+def deal_birth_cert(data, image=True):
     response_data = {}
-    resp = baidu_client.birthCertificateUrl(url=url)
+    if image:
+        resp = baidu_client.birthCertificate(image=data)
+    else:
+        resp = baidu_client.birthCertificateUrl(url=data)
     results = resp.get("words_result")
     if not results:
         # return CardResponse(code=1, type=0, message="Recognize Failure. Cause Unknown")
@@ -120,9 +169,12 @@ def deal_birth_cert(url):
     return response_data
 
 
-def deal_password(url):
+def deal_passport(data, image=True):
     response_data = {}
-    resp = baidu_client.passportUrl(url=url)
+    if image:
+        resp = baidu_client.passport(image=data)
+    else:
+        resp = baidu_client.passportUrl(url=data)
     results = resp["words_result"]
     if not results:
         return None
@@ -145,12 +197,9 @@ def deal_password(url):
     return response_data
 
 
-def deal_HkMcau_permit(url):
+def deal_HkMcau_permit(image_bytes):
     response_data = {}
-    response = requests.get(url)
-    if response.status_code != 200:
-        return None
-    resp = baidu_client.HKMacauExitentrypermit(image=response.content)
+    resp = baidu_client.HKMacauExitentrypermit(image=image_bytes)
     results = resp["words_result"]
     if not results:
         return None
