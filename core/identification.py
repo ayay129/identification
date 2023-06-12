@@ -214,3 +214,96 @@ def deal_HkMcau_permit(image_bytes):
     response_data["issueLocation"] = results["Address"]["words"]
     response_data["cardNum"] = results["CardNum"]["words"]
     return response_data
+
+
+def deal_degree_report(image_bytes):
+    response_data = {}
+    # resp = baidu_client.accuratePdf(pdf_file=image_bytes)
+    resp = baidu_client.accurate(image_bytes)
+    results = resp.get("words_result")
+    long_strings = [result["words"] for result in results]
+    long_string = ",".join(long_strings)
+    if "中国高等教育学位认证报告" in long_string:
+        degree_type = 1
+    elif "教育部学位与研究生教育发展中心" in long_string:
+        degree_type = 2
+    else:
+        degree_type = 0
+    response_data = parse_degree_report_type(long_strings, degree_type=degree_type)
+    return response_data
+
+
+def parse_degree_report_type(long_strings, degree_type=0):
+    response_data = {}
+    if not degree_type:
+        return None
+    if degree_type == 1:
+        for string in long_strings:
+            if ":" in string:
+                split_s = string.split(":")
+            else:
+                split_s = string.split("：")
+            if string.startswith("中国高等教育"):
+                response_data["report_title"] = string
+            elif string.startswith("姓名"):
+                response_data["name"] = split_s[-1].strip()
+            elif string.startswith("报告编号"):
+                response_data["reportID"] = split_s[-1].strip()
+            elif string.startswith("打印日期"):
+                response_data["printDate"] = split_s[-1].strip()
+            elif string.startswith("性别"):
+                response_data["gender"] = split_s[-1].strip()
+            elif string.startswith("出生日期"):
+                response_data["birth"] = split_s[-1].strip()
+            elif string.startswith("学位授予单位"):
+                response_data["degreeIssuer"] = split_s[-1].strip()
+            elif string.startswith("学位层级"):
+                response_data["degreeLevel"] = split_s[-1].strip()
+            elif string.startswith("学位门类"):
+                response_data["degreeClass"] = split_s[-1].strip()
+            elif string.startswith("学位专业"):
+                response_data["degreeMajor"] = split_s[-1].strip()
+            elif string.startswith("获学位年份"):
+                response_data["degreeGetDate"] = split_s[-1].strip()
+            elif string.startswith("学位证书"):
+                response_data["degreeID"] = split_s[-1].strip()
+            else:
+                pass
+    elif degree_type == 2:
+        for string in long_strings:
+            if ":" in string:
+                split_s = string.split(":")
+            else:
+                split_s = string.split("：")
+            if string.startswith("教育部学位与研究生教育发展中心"):
+                response_data["report_title"] = string
+            elif string.startswith("姓名"):
+                response_data["name"] = split_s[-1]
+            elif string.startswith("性别"):
+                response_data["gender"] = split_s[-1]
+            elif string.startswith("出生日期"):
+                response_data["birth"] = split_s[-1]
+            elif string.startswith("学位层级"):
+                response_data["degreeLevel"] = split_s[-1]
+            elif string.startswith("学位授予单位"):
+                response_data["degreeIssuer"] = split_s[-1]
+            elif string.startswith("专业（"):
+                response_data["degreeMajor"] = split_s[-1]
+            elif string.startswith("学科门类"):
+                response_data["degreeClass"] = split_s[-1]
+            elif string.startswith("获学位年份"):
+                response_data["degreeGetDate"] = split_s[-1]
+            elif string.startswith("证书编号"):
+                response_data["degreeID"] = split_s[-1]
+            else:
+                pass
+    return response_data
+
+
+# if __name__ == '__main__':
+#     # with open("../data/degree/本科学位认证报（王迪辛）.pdf", "rb") as f:
+#     #     pdf = f.read()
+#     with open("../data/degree/复旦大学硕士学位认证报告（我司代办）.pdf", "rb") as f:
+#         pdf = f.read()
+#     image = pdf_to_image_stream(pdf)
+#     deal_degree_report(image)

@@ -7,9 +7,7 @@
 import json
 
 import requests
-import io
-from core.identification import pdf_to_image_stream
-from config import baidu_client
+
 # 身份证
 # urls = [
     # "https://upload.cdn.galaxy-immi.com/crm/production/files/6058/1657076550912.jpg",
@@ -26,10 +24,10 @@ from config import baidu_client
 #         "https://upload.cdn.galaxy-immi.com/crm/production/files/7888/1660919894772.png"]
 #
 # 出生证
-urls = [
+# urls = [
     # "https://upload.cdn.galaxy-immi.com/crm/production/files/7861/1660620969527.pdf",
-        "https://upload.cdn.galaxy-immi.com/crm/production/files/7868/1660874135227.jpg",
-        "https://upload.cdn.galaxy-immi.com/crm/production/files/7870/1662184804891.jpg"]
+    #     "https://upload.cdn.galaxy-immi.com/crm/production/files/7868/1660874135227.jpg",
+    #     "https://upload.cdn.galaxy-immi.com/crm/production/files/7870/1662184804891.jpg"]
 
 # 护照
 # urls = [
@@ -38,8 +36,10 @@ urls = [
         # ]
 
 # 学位认证报告
-# urls = ["https://upload.cdn.galaxy-immi.com/crm/production/files/7865/1661878654668.pdf",
-#         "https://upload.cdn.galaxy-immi.com/crm/production/files/7865/1660623492861.pdf"]
+urls = [
+    # "https://upload.cdn.galaxy-immi.com/crm/production/files/7865/1661878654668.pdf",
+        "https://upload.cdn.galaxy-immi.com/crm/production/files/7865/1660623492861.pdf"
+]
 
 
 def transfer(url2t):
@@ -55,7 +55,7 @@ for url in urls:
     # print(links)
     resp = requests.post(url="http://127.0.0.1:52520/document/identification", json={
         "url": links,
-        "input_type": 2})
+        "input_type": 5})
     print(resp.text)
 
 # for url in urls:
