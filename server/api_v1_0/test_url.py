@@ -50,7 +50,8 @@ def transfer(url2t):
 for url in urls:
     links = transfer(url)
     # print(links)
-    resp = requests.post(url="http://127.0.0.1:8001/document/identification", json={
+    # resp = requests.post(url="http://127.0.0.1:8001/document/identification", json={
+    resp = requests.post(url="http://172.18.18.13:52520/document/identification", json={
         "url": links,
         "input_type": 2})
     print(json.dumps(resp.text))

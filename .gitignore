@@ -1,5 +1,4 @@
 data
 .pyc
 .idea
-.*test.*
 __pycache__
