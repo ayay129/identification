@@ -12,10 +12,14 @@ from pdf2image import convert_from_bytes
 from PIL import Image
 from docx import Document
 from urllib.parse import urlparse
+import platform
 
 
 def pdf_to_image_stream(image_bytes):
-    images = convert_from_bytes(image_bytes, poppler_path="D:\\Program Files (x86)\\poppler-23.05.0\\Library\\bin")
+    if platform.system().lower() == "windows":
+        images = convert_from_bytes(image_bytes, poppler_path="D:\\Program Files (x86)\\poppler-23.05.0\\Library\\bin")
+    else:
+        images = convert_from_bytes(image_bytes)
     # 多页拼接
     # if len(images) > 2:
     #     images = images[:2]
