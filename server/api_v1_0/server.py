@@ -10,7 +10,8 @@ import pydantic
 import requests
 from typing import Optional, List
 from core.exception import ReqType, RETCODE, err_msg, RespType
-from core.identification import deal_passport, deal_id_card, deal_HkMcau_permit, deal_birth_cert, change_format,deal_degree_report
+from core.identification import deal_passport, deal_id_card, deal_HkMcau_permit, deal_birth_cert, change_format, \
+    deal_degree_report
 
 app = FastAPI()
 
@@ -77,7 +78,8 @@ async def identity(request: PostData):
         try:
             response_data = deal_degree_report(image_bytes)
             if not response_data:
-                return CardResponse(code=RETCODE.IMAGE_FORMAT_ERROR, type=0, message=err_msg[RETCODE.IMAGE_FORMAT_ERROR])
+                return CardResponse(code=RETCODE.IMAGE_FORMAT_ERROR, type=0,
+                                    message=err_msg[RETCODE.IMAGE_FORMAT_ERROR])
         except Exception as e:
             return CardResponse(code=RETCODE.ERROR, type=0, message=err_msg[RETCODE.ERROR] + e)
         return CardResponse(code=RETCODE.OK, type=RespType.HkMacaoPermit, message=err_msg[RETCODE.OK],
