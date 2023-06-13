@@ -66,7 +66,7 @@ def image_procedure(image_bytes):
     original_width, original_height = image.size
 
     # 判断图像是否需要调整大小
-    if original_width > 800 or original_height > 600:
+    if original_width > 1080 or original_height > 1920:
         # 定义目标尺寸
         target_width = 800
         target_height = 600
@@ -114,7 +114,8 @@ def deal_id_card(data, image=True):
         return None
     for result in results:
         status = result["card_info"]["image_status"]
-        if status not in ["normal", "reverse_side"]:
+        # if status not in ["normal", "reverse_side","unknown"]:
+        if status in ["other_type_card"]:
             # return CardResponse(code=1, type=0, message="Recognize Failure. Cause {}".format(status))
             return None
         card_type = result["card_info"]["card_type"]
