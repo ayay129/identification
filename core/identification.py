@@ -217,8 +217,6 @@ def deal_HkMcau_permit(image_bytes):
 
 
 def deal_degree_report(image_bytes):
-    response_data = {}
-    # resp = baidu_client.accuratePdf(pdf_file=image_bytes)
     resp = baidu_client.accurate(image_bytes)
     results = resp.get("words_result")
     long_strings = [result["words"] for result in results]
@@ -306,4 +304,5 @@ def parse_degree_report_type(long_strings, degree_type=0):
 #     with open("../data/degree/复旦大学硕士学位认证报告（我司代办）.pdf", "rb") as f:
 #         pdf = f.read()
 #     image = pdf_to_image_stream(pdf)
-#     deal_degree_report(image)
+#     resp = deal_degree_report(image)
+#     print(json.dumps(resp))
