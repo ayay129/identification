@@ -5,6 +5,7 @@
 # @Site: 
 # @File: identification.py
 import io
+import json
 
 from config import baidu_client
 import requests
@@ -69,7 +70,7 @@ def image_procedure(image_bytes):
     # 获取图像的原始尺寸
     original_width, original_height = image.size
     # 判断图像是否需要调整大小
-    target_height,target_width = original_height,original_width
+    target_height, target_width = original_height, original_width
     # if original_width > 1080 or original_height > 1920:
     while True:
         image_size = (target_height * target_width * 3) / (1024 * 1024)
@@ -273,10 +274,10 @@ def parse_degree_report_type(long_strings, degree_type=0):
                 response_data["degreeAwardingUnit"] = split_s[-1].strip()
             elif string.startswith("学位层级"):
                 response_data["degreeLevel"] = split_s[-1].strip()
-            elif string.startswith("学位门类"):
+            elif string.startswith("学科门类"):
                 # response_data["degreeClass"] = split_s[-1].strip()
                 response_data["major"] = split_s[-1].strip()
-            elif string.startswith("学位专业"):
+            elif string.startswith("学科专业"):
                 # response_data["degreeMajor"] = split_s[-1].strip()
                 response_data["subjectCategory"] = split_s[-1].strip()
             elif string.startswith("获学位年份"):
@@ -287,7 +288,7 @@ def parse_degree_report_type(long_strings, degree_type=0):
             else:
                 pass
     elif degree_type == 2:
-        for string in long_strings:
+        for index, string in enumerate(long_strings):
             if ":" in string:
                 split_s = string.split(":")
             else:
@@ -295,23 +296,34 @@ def parse_degree_report_type(long_strings, degree_type=0):
             if string.startswith("教育部学位与研究生教育发展中心"):
                 response_data["report_title"] = string
             elif string.startswith("姓名"):
-                response_data["name"] = split_s[-1]
+                response_data["name"] = split_s[-1].strip()
             elif string.startswith("性别"):
-                response_data["gender"] = split_s[-1]
+                response_data["gender"] = split_s[-1].strip()
+            elif string.startswith("认证日期"):
+                response_data["printDate"] = split_s[-1].strip()
+            elif string.startswith("验证编码"):
+                if split_s[-1].strip():
+                    response_data["reportID"] = split_s[-1].strip()
+                else:
+                    response_data["reportID"] = long_strings[index+1]
             elif string.startswith("出生日期"):
-                response_data["birth"] = split_s[-1]
+                response_data["birth"] = split_s[-1].strip()
             elif string.startswith("学位层级"):
-                response_data["degreeLevel"] = split_s[-1]
+                response_data["degreeLevel"] = split_s[-1].strip()
             elif string.startswith("学位授予单位"):
-                response_data["degreeIssuer"] = split_s[-1]
+                # response_data["degreeIssuer"] = split_s[-1]
+                response_data["degreeAwardingUnit"] = split_s[-1].strip()
             elif string.startswith("专业（"):
-                response_data["degreeMajor"] = split_s[-1]
+                # response_data["degreeMajor"] = split_s[-1]
+                response_data["subjectCategory"] = split_s[-1].strip()
             elif string.startswith("学科门类"):
-                response_data["degreeClass"] = split_s[-1]
+                # response_data["degreeClass"] = split_s[-1]
+                response_data["major"] = split_s[-1].strip()
             elif string.startswith("获学位年份"):
-                response_data["degreeGetDate"] = split_s[-1]
+                # response_data["degreeGetDate"] = split_s[-1]
+                response_data["degreeYear"] = split_s[-1].strip()
             elif string.startswith("证书编号"):
-                response_data["degreeID"] = split_s[-1]
+                response_data["degreeID"] = split_s[-1].strip()
             else:
                 pass
     elif degree_type == 3:
@@ -335,22 +347,19 @@ def image_correct(image_path):
     pass
 
 
-if __name__ == '__main__':
-    with open("../data/degree/硕士学位认证报告（配偶）我司代办（康占国）.pdf", "rb") as f:
-        image = f.read()
-    image = pdf_to_image_stream(image_bytes=image)
-    resp = baidu_client.accurate(image)
-    print(resp)
-#     # resp = baidu_client.accurate(image)
-#     resp = baidu_client.HKMacauExitentrypermit(image)
-#     print(resp)
-# deal_HkMcau_permit(image)
-#     with open("../img.png", "rb") as f:
-#         image = f.read()
-#     doc_crop_enhance(image)
-#     # with open("../data/degree/本科学位认证报（王迪辛）.pdf", "rb") as f:
+# if __name__ == '__main__':
+#     #     # resp = baidu_client.accurate(image)
+#     #     resp = baidu_client.HKMacauExitentrypermit(image)
+#     #     print(resp)
+#     # deal_HkMcau_permit(image)
+#     #     with open("../img.png", "rb") as f:
+#     #         image = f.read()
+#     #     doc_crop_enhance(image)
+#     #     with open("../data/degree/本科学位认证报（王迪辛）.pdf", "rb") as f:
+#     #         pdf = f.read()
+#     # with open("../data/degree/复旦大学硕士学位认证报告（我司代办）.pdf", "rb") as f:
 #     #     pdf = f.read()
-#     with open("../data/degree/复旦大学硕士学位认证报告（我司代办）.pdf", "rb") as f:
+#     with open("../data/degree/硕士学位认证报告（配偶）我司代办（康占国）.pdf", "rb") as f:
 #         pdf = f.read()
 #     image = pdf_to_image_stream(pdf)
 #     resp = deal_degree_report(image)
