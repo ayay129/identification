@@ -71,9 +71,14 @@ async def identity(request: PostData):
                 raise
         except Exception as e:
             return CardResponse(code=RETCODE.ERROR, type=0, message=err_msg[RETCODE.ERROR] + e)
-        return CardResponse(code=RETCODE.OK, type=RespType.HkMacaoPermit, message=err_msg[RETCODE.OK],
+        if len(response_data.keys()) == 8:
+            rsp_type = RespType.HkMacaoPermitFront
+        else:
+            rsp_type = RespType.HkMacaoPermit
+        return CardResponse(code=RETCODE.OK, type=rsp_type, message=err_msg[RETCODE.OK],
                             data=response_data)
-    # 学位证
+
+    # 学位证 type 5
     elif request.input_type == ReqType.Degree:
         try:
             response_data = deal_degree_report(image_bytes)
@@ -82,16 +87,11 @@ async def identity(request: PostData):
                                     message=err_msg[RETCODE.IMAGE_FORMAT_ERROR])
         except Exception as e:
             return CardResponse(code=RETCODE.ERROR, type=0, message=err_msg[RETCODE.ERROR] + e)
-        return CardResponse(code=RETCODE.OK, type=RespType.HkMacaoPermit, message=err_msg[RETCODE.OK],
+        return CardResponse(code=RETCODE.OK, type=RespType.Degree, message=err_msg[RETCODE.OK],
                             data=response_data)
     # 非范围内
     else:
         return CardResponse(code=RETCODE.OUT_OF_SUPPORT, message=err_msg[RETCODE.OUT_OF_SUPPORT], data={})
 
 
-def transfer(url2t):
-    url = "http://test.crm.galaxy-immi.com/business/temp/temp-url"
-    data = {"field": url2t}
-    response = requests.get(url=url, params=data)
-    if 200 == response.status_code:
-        return response.json()['data']['url']
+

@@ -13,6 +13,7 @@ from PIL import Image
 from docx import Document
 from urllib.parse import urlparse
 import platform
+import base64
 
 
 def pdf_to_image_stream(image_bytes):
@@ -259,15 +260,19 @@ def parse_degree_report_type(long_strings, degree_type=0):
             elif string.startswith("出生日期"):
                 response_data["birth"] = split_s[-1].strip()
             elif string.startswith("学位授予单位"):
-                response_data["degreeIssuer"] = split_s[-1].strip()
+                # response_data["degreeIssuer"] = split_s[-1].strip()
+                response_data["degreeAwardingUnit"] = split_s[-1].strip()
             elif string.startswith("学位层级"):
                 response_data["degreeLevel"] = split_s[-1].strip()
             elif string.startswith("学位门类"):
-                response_data["degreeClass"] = split_s[-1].strip()
+                # response_data["degreeClass"] = split_s[-1].strip()
+                response_data["major"] = split_s[-1].strip()
             elif string.startswith("学位专业"):
-                response_data["degreeMajor"] = split_s[-1].strip()
+                # response_data["degreeMajor"] = split_s[-1].strip()
+                response_data["subjectCategory"] = split_s[-1].strip()
             elif string.startswith("获学位年份"):
-                response_data["degreeGetDate"] = split_s[-1].strip()
+                # response_data["degreeGetDate"] = split_s[-1].strip()
+                response_data["degreeYear"] = split_s[-1].strip()
             elif string.startswith("学位证书"):
                 response_data["degreeID"] = split_s[-1].strip()
             else:
@@ -303,7 +308,28 @@ def parse_degree_report_type(long_strings, degree_type=0):
     return response_data
 
 
+def doc_crop_enhance(image_bytes):
+    resp = baidu_client.doc_crop_enhance(image_bytes)
+    image_b64 = resp["image_processed"]
+    image = base64.b64decode(image_b64)
+    with open("test.png", "wb") as f:
+        f.write(image)
+    print(resp)
+
+
+def image_correct(image_path):
+    pass
+
 # if __name__ == '__main__':
+#     with open("../data/hkm/往来港澳通行证-正反面(主申)（唐存芳）_2.jpg","rb") as f:
+#         image = f.read()
+#     # resp = baidu_client.accurate(image)
+#     resp = baidu_client.HKMacauExitentrypermit(image)
+#     print(resp)
+# deal_HkMcau_permit(image)
+#     with open("../img.png", "rb") as f:
+#         image = f.read()
+#     doc_crop_enhance(image)
 #     # with open("../data/degree/本科学位认证报（王迪辛）.pdf", "rb") as f:
 #     #     pdf = f.read()
 #     with open("../data/degree/复旦大学硕士学位认证报告（我司代办）.pdf", "rb") as f:
