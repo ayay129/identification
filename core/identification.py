@@ -243,6 +243,8 @@ def deal_HkMcau_permit(image_bytes):
     for key, value in results.items():
         if not value:
             return RespType.HkMacaoPermitBack
+        elif not value.get("words"):
+            return RespType.HkMacaoPermitBack
     response_data["name"] = results["NameChn"].get("words")
     response_data["pinyin"] = results["NameEng"].get("words")
     response_data["birth"] = results["Birthday"].get("words")

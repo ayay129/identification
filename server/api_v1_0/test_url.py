@@ -19,13 +19,14 @@ id_urls = [
 # #
 # 港澳通行证
 hk_urls = [
-    "https://upload.cdn.galaxy-immi.com/crm/test/files/10070/1686736171514.jpg",
-    "https://upload.cdn.galaxy-immi.com/crm/production/files/6058/1656294519622.jpg",
-    "https://upload.cdn.galaxy-immi.com/crm/production/files/1659612754369.jpg",
-    "https://upload.cdn.galaxy-immi.com/crm/production/files/1659615211045.jpg",
-    "https://upload.cdn.galaxy-immi.com/crm/production/files/7888/1660919894772.png",
-    "https://upload.cdn.galaxy-immi.com/crm/test/files/10029/1686730110871.jpg",
-    "https://upload.cdn.galaxy-immi.com/crm/test/files/10070/1686738383100.jpg"
+    "https://upload.cdn.galaxy-immi.com/crm/test/files/10070/1686744354080.jpg",
+    # "https://upload.cdn.galaxy-immi.com/crm/test/files/10070/1686736171514.jpg",
+    # "https://upload.cdn.galaxy-immi.com/crm/production/files/6058/1656294519622.jpg",
+    # "https://upload.cdn.galaxy-immi.com/crm/production/files/1659612754369.jpg",
+    # "https://upload.cdn.galaxy-immi.com/crm/production/files/1659615211045.jpg",
+    # "https://upload.cdn.galaxy-immi.com/crm/production/files/7888/1660919894772.png",
+    # "https://upload.cdn.galaxy-immi.com/crm/test/files/10029/1686730110871.jpg",
+    # "https://upload.cdn.galaxy-immi.com/crm/test/files/10070/1686738383100.jpg"
 ]
 #
 # 出生证
