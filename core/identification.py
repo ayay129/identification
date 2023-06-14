@@ -16,7 +16,7 @@ from urllib.parse import urlparse
 import platform
 import base64
 from core.exception import RespType
-from core.const import degree_header
+from core.const import degree_header, birth_cert_header, passport_header, hk_macau_header
 
 
 def pdf_to_image_stream(image_bytes):
@@ -147,7 +147,7 @@ def deal_id_card(data, image=True):
 
 
 def deal_birth_cert(data, image=True):
-    response_data = {}
+    response_data = {key: "" for key in birth_cert_header}
     if image:
         resp = baidu_client.birthCertificate(image=data)
     else:
@@ -185,7 +185,7 @@ def deal_birth_cert(data, image=True):
 
 
 def deal_passport(data, image=True):
-    response_data = {}
+    response_data = {key: "" for key in passport_header}
     if image:
         resp = baidu_client.passport(image=data)
     else:
@@ -213,27 +213,26 @@ def deal_passport(data, image=True):
 
 
 def deal_HkMcau_permit(image_bytes):
-    response_data = {}
+    response_data = {key: "" for key in hk_macau_header}
     resp = baidu_client.accurate(image_bytes)
     results = resp["words_result"]
     long_strings = [result["words"] for result in results]
     long_string = ",".join(long_strings)
-    if "签注" in long_string:
+    if "签注" in long_string or "旅游" in long_string or "往来港澳通行证" not in long_string:
         # 背面
         return RespType.HkMacaoPermitBack
     else:
-        resp = baidu_client.HKMacauExitentrypermit(image=image_bytes,
-                                                   options={"exitentrypermit_type": "hk_mc_passport_back"})
+        resp = baidu_client.HKMacauExitentrypermit(image=image_bytes)
         results = resp["words_result"]
-        response_data["name"] = results["NameChn"]["words"]
-        response_data["pinyin"] = results["NameEng"]["words"]
-        response_data["birth"] = results["Birthday"]["words"]
-        response_data["gender"] = results["Sex"]["words"]
+        response_data["name"] = results["NameChn"].get("words")
+        response_data["pinyin"] = results["NameEng"].get("words")
+        response_data["birth"] = results["Birthday"].get("words")
+        response_data["gender"] = results["Sex"].get("words")
         valid_date = results["ValidDate"]["words"].split("-")
         response_data["termBegins"] = valid_date[0]
         response_data["endOfTerm"] = valid_date[1]
-        response_data["issueLocation"] = results["Address"]["words"]
-        response_data["cardNum"] = results["CardNum"]["words"]
+        response_data["issueLocation"] = results["Address"].get("words")
+        response_data["cardNum"] = results["CardNum"].get("words")
         return response_data
 
 
