@@ -21,15 +21,16 @@ import requests
 #         "https://upload.cdn.galaxy-immi.com/crm/production/files/1659612754369.jpg",
 #         "https://upload.cdn.galaxy-immi.com/crm/production/files/1659615211045.jpg",
 #         "https://upload.cdn.galaxy-immi.com/crm/production/files/7888/1660919894772.png"]
+urls = ["https://upload.cdn.galaxy-immi.com/crm/test/files/10029/1686730110871.jpg"]
 #
 # 出生证
 # urls = [
     # "https://upload.cdn.galaxy-immi.com/crm/production/files/7861/1660620969527.pdf",
     #     "https://upload.cdn.galaxy-immi.com/crm/production/files/7868/1660874135227.jpg",
     #     "https://upload.cdn.galaxy-immi.com/crm/production/files/7870/1662184804891.jpg"]
-urls = [
-    "https://upload.cdn.galaxy-immi.com/crm/test/files/10029/1686656152017.pdf"
-]
+# urls = [
+#     "https://upload.cdn.galaxy-immi.com/crm/test/files/10029/1686656152017.pdf"
+# ]
 
 # 护照
 # urls = [
@@ -39,9 +40,11 @@ urls = [
 
 # 学位认证报告
 # urls = [
+#         "https://upload.cdn.galaxy-immi.com/crm/test/files/10070/1686725282010.pdf",
 #         "https://upload.cdn.galaxy-immi.com/crm/production/files/7865/1661878654668.pdf",
-#         "https://upload.cdn.galaxy-immi.com/crm/production/files/7865/1660623492861.pdf"
+        # "https://upload.cdn.galaxy-immi.com/crm/production/files/7865/1660623492861.pdf"
 # ]
+# urls = ["https://upload.cdn.galaxy-immi.com/crm/test/files/10070/1686725282010.pdf"]
 
 
 def transfer(url2t):
@@ -57,7 +60,7 @@ for url in urls:
     # print(links)
     resp = requests.post(url="http://127.0.0.1:52520/document/identification", json={
         "url": links,
-        "input_type": 2})
+        "input_type": 4})
     print(resp.text)
 
 # for url in urls:

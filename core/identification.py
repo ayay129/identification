@@ -15,7 +15,8 @@ from docx import Document
 from urllib.parse import urlparse
 import platform
 import base64
-import sys
+from core.exception import RespType
+from core.const import degree_header
 
 
 def pdf_to_image_stream(image_bytes):
@@ -213,21 +214,27 @@ def deal_passport(data, image=True):
 
 def deal_HkMcau_permit(image_bytes):
     response_data = {}
-    resp = baidu_client.HKMacauExitentrypermit(image=image_bytes)
+    resp = baidu_client.accurate(image_bytes)
     results = resp["words_result"]
-    if not results:
-        return None
-        # return CardResponse(code=1, type=0, message="Recognize Failure. Cause Unknown")
-    response_data["name"] = results["NameChn"]["words"]
-    response_data["pinyin"] = results["NameEng"]["words"]
-    response_data["birth"] = results["Birthday"]["words"]
-    response_data["gender"] = results["Sex"]["words"]
-    valid_date = results["ValidDate"]["words"].split("-")
-    response_data["termBegins"] = valid_date[0]
-    response_data["endOfTerm"] = valid_date[1]
-    response_data["issueLocation"] = results["Address"]["words"]
-    response_data["cardNum"] = results["CardNum"]["words"]
-    return response_data
+    long_strings = [result["words"] for result in results]
+    long_string = ",".join(long_strings)
+    if "签注" in long_string:
+        # 背面
+        return RespType.HkMacaoPermitBack
+    else:
+        resp = baidu_client.HKMacauExitentrypermit(image=image_bytes,
+                                                   options={"exitentrypermit_type": "hk_mc_passport_back"})
+        results = resp["words_result"]
+        response_data["name"] = results["NameChn"]["words"]
+        response_data["pinyin"] = results["NameEng"]["words"]
+        response_data["birth"] = results["Birthday"]["words"]
+        response_data["gender"] = results["Sex"]["words"]
+        valid_date = results["ValidDate"]["words"].split("-")
+        response_data["termBegins"] = valid_date[0]
+        response_data["endOfTerm"] = valid_date[1]
+        response_data["issueLocation"] = results["Address"]["words"]
+        response_data["cardNum"] = results["CardNum"]["words"]
+        return response_data
 
 
 def deal_degree_report(image_bytes):
@@ -248,7 +255,7 @@ def deal_degree_report(image_bytes):
 
 
 def parse_degree_report_type(long_strings, degree_type=0):
-    response_data = {}
+    response_data = {key: "" for key in degree_header}
     if not degree_type:
         return None
     if degree_type == 1:
@@ -265,7 +272,7 @@ def parse_degree_report_type(long_strings, degree_type=0):
                 response_data["reportID"] = split_s[-1].strip()
             elif string.startswith("打印日期"):
                 response_data["printDate"] = split_s[-1].strip()
-            elif string.startswith("性别"):
+            elif string.startswith("性别") or string.startswith("别"):
                 response_data["gender"] = split_s[-1].strip()
             elif string.startswith("出生日期"):
                 response_data["birth"] = split_s[-1].strip()
@@ -305,7 +312,7 @@ def parse_degree_report_type(long_strings, degree_type=0):
                 if split_s[-1].strip():
                     response_data["reportID"] = split_s[-1].strip()
                 else:
-                    response_data["reportID"] = long_strings[index+1]
+                    response_data["reportID"] = long_strings[index + 1]
             elif string.startswith("出生日期"):
                 response_data["birth"] = split_s[-1].strip()
             elif string.startswith("学位层级"):
@@ -327,10 +334,31 @@ def parse_degree_report_type(long_strings, degree_type=0):
             else:
                 pass
     elif degree_type == 3:
-        for string in long_strings:
+        for index, string in enumerate(long_strings):
+            if ":" in string:
+                split_s = string.split(":")
+            else:
+                split_s = string.split("：")
             if string.endswith("在线验证报告"):
                 response_data["report_title"] = string
-
+            elif string.startswith("更新日期"):
+                response_data["printDate"] = split_s[-1].strip()
+            elif string.startswith("姓名"):
+                response_data["name"] = long_strings[index + 1]
+            elif string.startswith("性别"):
+                response_data["gender"] = long_strings[index + 1]
+            elif string.startswith("出生日期"):
+                response_data["birth"] = long_strings[index + 1]
+            elif string.startswith("获学位日期"):
+                response_data["degreeYear"] = long_strings[index + 1]
+            elif string.startswith("学位授予单位"):
+                response_data["degreeAwardingUnit"] = long_strings[index + 1]
+            elif string.startswith("所授学位"):
+                response_data["major"] = long_strings[index + 1]
+            elif string.startswith("学位证书编号"):
+                response_data["degreeID"] = long_strings[index + 1]
+            else:
+                continue
     return response_data
 
 
@@ -346,7 +374,6 @@ def doc_crop_enhance(image_bytes):
 def image_correct(image_path):
     pass
 
-
 # if __name__ == '__main__':
 #     #     # resp = baidu_client.accurate(image)
 #     #     resp = baidu_client.HKMacauExitentrypermit(image)
@@ -359,8 +386,8 @@ def image_correct(image_path):
 #     #         pdf = f.read()
 #     # with open("../data/degree/复旦大学硕士学位认证报告（我司代办）.pdf", "rb") as f:
 #     #     pdf = f.read()
-#     with open("../data/degree/硕士学位认证报告（配偶）我司代办（康占国）.pdf", "rb") as f:
-#         pdf = f.read()
-#     image = pdf_to_image_stream(pdf)
-#     resp = deal_degree_report(image)
-#     print(json.dumps(resp))
+# with open("../data/degree/硕士学位认证报告（配偶）我司代办（康占国）.pdf", "rb") as f:
+#     pdf = f.read()
+# image = pdf_to_image_stream(pdf)
+# resp = deal_degree_report(image)
+# print(json.dumps(resp))

@@ -62,3 +62,4 @@ class XMLParser(Parser):
 
 class HTMLParser(Parser):
     pass
+

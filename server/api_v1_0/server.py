@@ -67,8 +67,9 @@ async def identity(request: PostData):
         # 转二进制
         try:
             response_data = deal_HkMcau_permit(image_bytes)
-            if not response_data:
-                raise
+            if response_data == RespType.HkMacaoPermitBack:
+                return CardResponse(code=RETCODE.OK, type=RespType.HkMacaoPermitBack, message=err_msg[RETCODE.OK],
+                                    data=None)
         except Exception as e:
             return CardResponse(code=RETCODE.ERROR, type=0, message=err_msg[RETCODE.ERROR] + e)
         if len(response_data.keys()) == 8:
