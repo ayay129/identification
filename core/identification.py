@@ -240,8 +240,9 @@ def deal_HkMcau_permit(image_bytes):
     response_data = {key: "" for key in hk_macau_header}
     resp = baidu_client.HKMacauExitentrypermit(image=image_bytes)
     results = resp["words_result"]
-    if not results["NameChn"].get("words"):
-        return RespType.HkMacaoPermitBack
+    for key, value in results.items():
+        if not value:
+            return RespType.HkMacaoPermitBack
     response_data["name"] = results["NameChn"].get("words")
     response_data["pinyin"] = results["NameEng"].get("words")
     response_data["birth"] = results["Birthday"].get("words")
