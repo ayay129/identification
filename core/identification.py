@@ -212,7 +212,7 @@ def deal_passport(data, image=True):
     return response_data
 
 
-def deal_HkMcau_permit(image_bytes):
+def deal_HkMcau_permit2(image_bytes):
     response_data = {key: "" for key in hk_macau_header}
     resp = baidu_client.accurate(image_bytes)
     results = resp["words_result"]
@@ -234,6 +234,24 @@ def deal_HkMcau_permit(image_bytes):
         response_data["issueLocation"] = results["Address"].get("words")
         response_data["cardNum"] = results["CardNum"].get("words")
         return response_data
+
+
+def deal_HkMcau_permit(image_bytes):
+    response_data = {key: "" for key in hk_macau_header}
+    resp = baidu_client.HKMacauExitentrypermit(image=image_bytes)
+    results = resp["words_result"]
+    if not results["NameChn"].get("words"):
+        return RespType.HkMacaoPermitBack
+    response_data["name"] = results["NameChn"].get("words")
+    response_data["pinyin"] = results["NameEng"].get("words")
+    response_data["birth"] = results["Birthday"].get("words")
+    response_data["gender"] = results["Sex"].get("words")
+    valid_date = results["ValidDate"]["words"].split("-")
+    response_data["termBegins"] = valid_date[0]
+    response_data["endOfTerm"] = valid_date[1]
+    response_data["issueLocation"] = results["Address"].get("words")
+    response_data["cardNum"] = results["CardNum"].get("words")
+    return response_data
 
 
 def deal_degree_report(image_bytes):

@@ -71,7 +71,7 @@ async def identity(request: PostData):
                 return CardResponse(code=RETCODE.OK, type=RespType.HkMacaoPermitBack, message=err_msg[RETCODE.OK],
                                     data=None)
         except Exception as e:
-            return CardResponse(code=RETCODE.ERROR, type=0, message=err_msg[RETCODE.ERROR] + e)
+            return CardResponse(code=RETCODE.ERROR, type=0, message=err_msg[RETCODE.ERROR])
         if len(response_data.keys()) == 8:
             rsp_type = RespType.HkMacaoPermitFront
         elif len(response_data.keys()) < 8:

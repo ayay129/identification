@@ -8,7 +8,8 @@ import json
 import requests
 
 # 身份证
-id_urls = ["https://upload.cdn.galaxy-immi.com/crm/test/files/10029/1686641661087.jpg",
+id_urls = [
+    "https://upload.cdn.galaxy-immi.com/crm/test/files/10029/1686641661087.jpg",
            "https://upload.cdn.galaxy-immi.com/crm/production/files/6058/1657076550912.jpg",
            "https://upload.cdn.galaxy-immi.com/crm/production/files/6058/1657076559505.jpg",
            "https://upload.cdn.galaxy-immi.com/crm/production/files/1659612739360.jpg",
@@ -23,7 +24,8 @@ hk_urls = [
     "https://upload.cdn.galaxy-immi.com/crm/production/files/1659612754369.jpg",
     "https://upload.cdn.galaxy-immi.com/crm/production/files/1659615211045.jpg",
     "https://upload.cdn.galaxy-immi.com/crm/production/files/7888/1660919894772.png",
-    "https://upload.cdn.galaxy-immi.com/crm/test/files/10029/1686730110871.jpg"
+    "https://upload.cdn.galaxy-immi.com/crm/test/files/10029/1686730110871.jpg",
+    "https://upload.cdn.galaxy-immi.com/crm/test/files/10070/1686738383100.jpg"
 ]
 #
 # 出生证
@@ -65,8 +67,8 @@ def transfer(url2t):
 
 
 for key, value in test_dict.items():
-    # if key != 4:
-    #     continue
+    if key != 4:
+        continue
     for url in value:
         links = transfer(url)
         # print(links)
