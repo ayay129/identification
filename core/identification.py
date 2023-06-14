@@ -266,7 +266,7 @@ def parse_degree_report_type(long_strings, degree_type=0):
                 split_s = string.split("：")
             if string.startswith("中国高等教育"):
                 response_data["report_title"] = string
-            elif string.startswith("姓名"):
+            elif string.startswith("姓名") or string.startswith("名"):
                 response_data["name"] = split_s[-1].strip()
             elif string.startswith("报告编号"):
                 response_data["reportID"] = split_s[-1].strip()
