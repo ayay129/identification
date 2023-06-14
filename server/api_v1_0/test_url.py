@@ -8,7 +8,7 @@ import json
 import requests
 
 # 身份证
-urls = ["https://upload.cdn.galaxy-immi.com/crm/test/files/10029/1686641661087.jpg"]
+# urls = ["https://upload.cdn.galaxy-immi.com/crm/test/files/10029/1686641661087.jpg"]
     # "https://upload.cdn.galaxy-immi.com/crm/production/files/6058/1657076550912.jpg",
     #     "https://upload.cdn.galaxy-immi.com/crm/production/files/6058/1657076559505.jpg",
     #     "https://upload.cdn.galaxy-immi.com/crm/production/files/1659612739360.jpg",
@@ -27,6 +27,9 @@ urls = ["https://upload.cdn.galaxy-immi.com/crm/test/files/10029/1686641661087.j
     # "https://upload.cdn.galaxy-immi.com/crm/production/files/7861/1660620969527.pdf",
     #     "https://upload.cdn.galaxy-immi.com/crm/production/files/7868/1660874135227.jpg",
     #     "https://upload.cdn.galaxy-immi.com/crm/production/files/7870/1662184804891.jpg"]
+urls = [
+    "https://upload.cdn.galaxy-immi.com/crm/test/files/10029/1686656152017.pdf"
+]
 
 # 护照
 # urls = [
@@ -36,8 +39,8 @@ urls = ["https://upload.cdn.galaxy-immi.com/crm/test/files/10029/1686641661087.j
 
 # 学位认证报告
 # urls = [
-    # "https://upload.cdn.galaxy-immi.com/crm/production/files/7865/1661878654668.pdf",
-    #     "https://upload.cdn.galaxy-immi.com/crm/production/files/7865/1660623492861.pdf"
+#         "https://upload.cdn.galaxy-immi.com/crm/production/files/7865/1661878654668.pdf",
+#         "https://upload.cdn.galaxy-immi.com/crm/production/files/7865/1660623492861.pdf"
 # ]
 
 
@@ -54,7 +57,7 @@ for url in urls:
     # print(links)
     resp = requests.post(url="http://127.0.0.1:52520/document/identification", json={
         "url": links,
-        "input_type": 1})
+        "input_type": 2})
     print(resp.text)
 
 # for url in urls:

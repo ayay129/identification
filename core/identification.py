@@ -14,6 +14,7 @@ from docx import Document
 from urllib.parse import urlparse
 import platform
 import base64
+import sys
 
 
 def pdf_to_image_stream(image_bytes):
@@ -35,12 +36,14 @@ def pdf_to_image_stream(image_bytes):
         concatenated_image.paste(image, (0, y_offset))
         y_offset += image.height
     # 调整大小
-    target_height = 800
-    target_width = 600
-    resize_image = concatenated_image.resize((target_width, target_height), resample=Image.LANCZOS)
+    # target_height = 800
+    # target_width = 600
+    # resize_image = concatenated_image.resize((target_width, target_height), resample=Image.LANCZOS)
     stream = io.BytesIO()
-    resize_image.save(stream, format="PNG", quality=90)
+    # resize_image.save(stream, format="PNG", quality=90)
+    concatenated_image.save(stream, format="PNG", quality=90)
     image_stream = stream.getvalue()
+    image_stream = image_procedure(image_bytes=image_stream)
     return image_stream
 
 
@@ -65,15 +68,19 @@ def image_procedure(image_bytes):
     image = Image.open(io.BytesIO(image_bytes))
     # 获取图像的原始尺寸
     original_width, original_height = image.size
-
     # 判断图像是否需要调整大小
-    if original_width > 1080 or original_height > 1920:
-        # 定义目标尺寸
-        target_width = 800
-        target_height = 600
+    target_height,target_width = original_height,original_width
+    # if original_width > 1080 or original_height > 1920:
+    while True:
+        image_size = (target_height * target_width * 3) / (1024 * 1024)
+        if image_size < 4:
+            break
+        target_height *= 0.95
+        target_width *= 0.95
 
-        # 调整图像尺寸
-        resized_image = image.resize((target_width, target_height))
+    # 超过200万像素
+    if target_height != original_height or target_width != original_width:
+        resized_image = image.resize((int(target_width), int(target_height)))
     else:
         # 图像不需要调整大小
         resized_image = image
@@ -231,6 +238,8 @@ def deal_degree_report(image_bytes):
         degree_type = 1
     elif "教育部学位与研究生教育发展中心" in long_string:
         degree_type = 2
+    elif "中国高等教育学位在线验证报告" in long_string:
+        degree_type = 3
     else:
         degree_type = 0
     response_data = parse_degree_report_type(long_strings, degree_type=degree_type)
@@ -305,6 +314,11 @@ def parse_degree_report_type(long_strings, degree_type=0):
                 response_data["degreeID"] = split_s[-1]
             else:
                 pass
+    elif degree_type == 3:
+        for string in long_strings:
+            if string.endswith("在线验证报告"):
+                response_data["report_title"] = string
+
     return response_data
 
 
@@ -320,9 +334,13 @@ def doc_crop_enhance(image_bytes):
 def image_correct(image_path):
     pass
 
-# if __name__ == '__main__':
-#     with open("../data/hkm/往来港澳通行证-正反面(主申)（唐存芳）_2.jpg","rb") as f:
-#         image = f.read()
+
+if __name__ == '__main__':
+    with open("../data/degree/硕士学位认证报告（配偶）我司代办（康占国）.pdf", "rb") as f:
+        image = f.read()
+    image = pdf_to_image_stream(image_bytes=image)
+    resp = baidu_client.accurate(image)
+    print(resp)
 #     # resp = baidu_client.accurate(image)
 #     resp = baidu_client.HKMacauExitentrypermit(image)
 #     print(resp)
