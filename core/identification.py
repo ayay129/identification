@@ -75,7 +75,7 @@ def image_procedure(image_bytes):
     # if original_width > 1080 or original_height > 1920:
     while True:
         image_size = (target_height * target_width * 3) / (1024 * 1024)
-        if image_size < 4:
+        if image_size < 6:
             break
         target_height *= 0.95
         target_width *= 0.95

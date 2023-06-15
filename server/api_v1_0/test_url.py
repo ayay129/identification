@@ -19,7 +19,9 @@ id_urls = [
 # #
 # 港澳通行证
 hk_urls = [
-    "https://upload.cdn.galaxy-immi.com/crm/test/files/10070/1686744354080.jpg",
+    "https://upload.cdn.galaxy-immi.com/crm/test/files/10074/1686807812049.jpeg"
+    # "https://upload.cdn.galaxy-immi.com/crm/test/files/10029/1686791992786.jpg",
+    # "https://upload.cdn.galaxy-immi.com/crm/test/files/10070/1686744354080.jpg",
     # "https://upload.cdn.galaxy-immi.com/crm/test/files/10070/1686736171514.jpg",
     # "https://upload.cdn.galaxy-immi.com/crm/production/files/6058/1656294519622.jpg",
     # "https://upload.cdn.galaxy-immi.com/crm/production/files/1659612754369.jpg",
