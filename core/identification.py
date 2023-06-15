@@ -7,7 +7,7 @@
 import io
 import json
 
-from config import baidu_client
+from config import baidu_client,baidu_image_client
 import requests
 from pdf2image import convert_from_bytes
 from PIL import Image
@@ -395,19 +395,11 @@ def image_correct(image_path):
     pass
 
 # if __name__ == '__main__':
-#     #     # resp = baidu_client.accurate(image)
-#     #     resp = baidu_client.HKMacauExitentrypermit(image)
-#     #     print(resp)
-#     # deal_HkMcau_permit(image)
-#     #     with open("../img.png", "rb") as f:
-#     #         image = f.read()
-#     #     doc_crop_enhance(image)
-#     #     with open("../data/degree/本科学位认证报（王迪辛）.pdf", "rb") as f:
-#     #         pdf = f.read()
-#     # with open("../data/degree/复旦大学硕士学位认证报告（我司代办）.pdf", "rb") as f:
-#     #     pdf = f.read()
-# with open("../data/degree/硕士学位认证报告（配偶）我司代办（康占国）.pdf", "rb") as f:
-#     pdf = f.read()
-# image = pdf_to_image_stream(pdf)
-# resp = deal_degree_report(image)
-# print(json.dumps(resp))
+#     with open("../enhance.jpeg","rb") as f:
+#         image = f.read()
+#     # resp = baidu_image_client.imageDefinitionEnhance(image)
+#     resp = baidu_image_client.contrastEnhance(image)
+#     b64image = resp["image"]
+#     images = base64.b64decode(b64image)
+#     images = image_procedure(images)
+#     resp = deal_HkMcau_permit(images)

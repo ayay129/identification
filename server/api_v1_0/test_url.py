@@ -74,11 +74,16 @@ for key, value in test_dict.items():
         continue
     for url in value:
         links = transfer(url)
+        resp = requests.get(links)
+        if resp.status_code != 200:
+            continue
+        with open("../../enhance.jpeg", "wb") as f:
+            f.write(resp.content)
         # print(links)
-        resp = requests.post(url="http://127.0.0.1:52520/document/identification", json={
-            "url": links,
-            "input_type": key})
-        print(resp.text)
+        # resp = requests.post(url="http://127.0.0.1:52520/document/identification", json={
+        #     "url": links,
+        #     "input_type": key})
+        # print(resp.text)
 
 # for url in urls:
 #     links = transfer(url)
