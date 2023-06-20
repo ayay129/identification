@@ -7,11 +7,10 @@
 
 from fastapi import FastAPI, Response
 import pydantic
-import requests
 from typing import Optional, List
-from core.exception import ReqType, RETCODE, err_msg, RespType
+from core.exception import ReqType, RETCODE, err_msg, RespType, InterfaceError
 from core.identification import deal_passport, deal_id_card, deal_HkMcau_permit, deal_birth_cert, change_format, \
-    deal_degree_report
+    deal_degree_report, doc_crop_enhance
 
 app = FastAPI()
 
@@ -19,6 +18,10 @@ app = FastAPI()
 class PostData(pydantic.BaseModel):
     url: str
     input_type: int
+
+
+class CorrectData(pydantic.BaseModel):
+    url: str
 
 
 class CardResponse(pydantic.BaseModel):
@@ -34,14 +37,21 @@ class CardResponse(pydantic.BaseModel):
 async def identity(request: PostData):
     image_bytes = change_format(url=request.url)
     if not image_bytes:
-        return CardResponse(code=RETCODE.IMAGE_FORMAT_ERROR, type=RespType.Unknown,
-                            message=err_msg[RETCODE.IMAGE_FORMAT_ERROR])
+        return InterfaceError(code=RETCODE.CHANGE_FORMAT_ERROR, message=err_msg[RETCODE.CHANGE_FORMAT_ERROR])
     # 身份证
     if request.input_type == ReqType.IdentityCard:
-        response_data = deal_id_card(image_bytes)
+        try:
+            response_data = deal_id_card(image_bytes)
+        except Exception as err:
+            # 识别异常
+            return InterfaceError(code=RETCODE.ERROR, message="{}->{}".format(err_msg[RETCODE.ERROR], err))
+        # 异常
         if response_data is None:
-            return CardResponse(code=RETCODE.ERROR, type=RespType.Unknown, message=err_msg[RETCODE.ERROR])
-        elif len(response_data.keys()) == 6:
+            return InterfaceError(code=RETCODE.RECOGNIZE_EMPTY_ERROR, message=err_msg[RETCODE.RECOGNIZE_EMPTY_ERROR])
+        elif isinstance(response_data, InterfaceError):
+            return response_data
+        # 正常
+        if len(response_data.keys()) == 6:
             return CardResponse(code=RETCODE.OK, type=RespType.IdentityCardFront, message=err_msg[RETCODE.OK],
                                 data=response_data)
         elif len(response_data.keys()) == 3:
@@ -52,49 +62,89 @@ async def identity(request: PostData):
                                 data=response_data)
     # 出生证
     elif request.input_type == ReqType.BirthCert:
-        response_data = deal_birth_cert(image_bytes)
+        try:
+            response_data = deal_birth_cert(image_bytes)
+        except Exception as err:
+            # 识别异常
+            return InterfaceError(code=RETCODE.ERROR, message="{}->{}".format(err_msg[RETCODE.ERROR], err))
+        # 异常
         if response_data is None:
-            return CardResponse(code=RETCODE.ERROR, type=0, message=err_msg[RETCODE.ERROR])
+            return InterfaceError(code=RETCODE.RECOGNIZE_EMPTY_ERROR, message=err_msg[RETCODE.RECOGNIZE_EMPTY_ERROR])
+        elif isinstance(response_data, InterfaceError):
+            return response_data
+        # 正常
         return CardResponse(code=RETCODE.OK, type=RespType.BirthCert, message=err_msg[RETCODE.OK], data=response_data)
     # 护照
     elif request.input_type == ReqType.PassPort:
-        response_data = deal_passport(image_bytes)
+        try:
+            response_data = deal_passport(image_bytes)
+        except Exception as err:
+            # 识别异常
+            return InterfaceError(code=RETCODE.ERROR, message="{}->{}".format(err_msg[RETCODE.ERROR], err))
+        # 异常
         if response_data is None:
-            return CardResponse(code=RETCODE.ERROR, type=0, message=err_msg[RETCODE.ERROR])
+            return InterfaceError(code=RETCODE.RECOGNIZE_EMPTY_ERROR, message=err_msg[RETCODE.RECOGNIZE_EMPTY_ERROR])
+        elif isinstance(response_data, InterfaceError):
+            return response_data
+        # 正常
         return CardResponse(code=RETCODE.OK, type=RespType.PassPort, message=err_msg[RETCODE.OK], data=response_data)
     # 港澳通行证
     elif request.input_type == ReqType.HkMacaoPermit:
         # 转二进制
         try:
             response_data = deal_HkMcau_permit(image_bytes)
-            if response_data == RespType.HkMacaoPermitBack:
-                return CardResponse(code=RETCODE.OK, type=RespType.HkMacaoPermitBack, message=err_msg[RETCODE.OK],
-                                    data=None)
-        except Exception as e:
-            return CardResponse(code=RETCODE.ERROR, type=0, message=err_msg[RETCODE.ERROR])
-        if len(response_data.keys()) == 8:
-            rsp_type = RespType.HkMacaoPermitFront
-        elif len(response_data.keys()) < 8:
-            rsp_type = RespType.HkMacaoPermitBack
+        except Exception as err:
+            # 识别异常
+            return InterfaceError(code=RETCODE.ERROR, message="{}->{}".format(err_msg[RETCODE.ERROR], err))
+        # 异常
+        if response_data is None:
+            # 为空
+            return InterfaceError(code=RETCODE.RECOGNIZE_EMPTY_ERROR,
+                                  message=err_msg[RETCODE.RECOGNIZE_EMPTY_ERROR])
+        elif isinstance(response_data, InterfaceError):
+            # 返回内部异常
+            return response_data
+        # 正常
+        if response_data == RespType.HkMacaoPermitBack:
+            # 反面
+            return CardResponse(code=RETCODE.OK, type=RespType.HkMacaoPermitBack, message=err_msg[RETCODE.OK],
+                                data=None)
+        elif len(response_data.keys()) == 8:
+            # 正面
+            return CardResponse(code=RETCODE.OK, type=RespType.HkMacaoPermitFront, message=err_msg[RETCODE.OK],
+                                data=response_data)
         else:
-            rsp_type = RespType.HkMacaoPermit
-        return CardResponse(code=RETCODE.OK, type=rsp_type, message=err_msg[RETCODE.OK],
-                            data=response_data)
-
+            # 混贴
+            return CardResponse(code=RETCODE.OK, type=RespType.HkMacaoPermit, message=err_msg[RETCODE.OK],
+                                data=response_data)
     # 学位证 type 5
     elif request.input_type == ReqType.Degree:
         try:
             response_data = deal_degree_report(image_bytes)
-            if not response_data:
-                return CardResponse(code=RETCODE.IMAGE_FORMAT_ERROR, type=0,
-                                    message=err_msg[RETCODE.IMAGE_FORMAT_ERROR])
-        except Exception as e:
-            return CardResponse(code=RETCODE.ERROR, type=0, message=err_msg[RETCODE.ERROR] + e)
+        except Exception as err:
+            return InterfaceError(code=RETCODE.ERROR, message="{}->{}".format(err_msg[RETCODE.ERROR], err))
+        # 异常
+        if isinstance(response_data, InterfaceError):
+            return response_data
+        elif response_data is None:
+            return InterfaceError(code=RETCODE.RECOGNIZE_EMPTY_ERROR,
+                                  message=err_msg[RETCODE.RECOGNIZE_EMPTY_ERROR])
+        # 正常
         return CardResponse(code=RETCODE.OK, type=RespType.Degree, message=err_msg[RETCODE.OK],
                             data=response_data)
     # 非范围内
     else:
-        return CardResponse(code=RETCODE.OUT_OF_SUPPORT, message=err_msg[RETCODE.OUT_OF_SUPPORT], data={})
+        return InterfaceError(code=RETCODE.OUT_OF_SUPPORT, message=err_msg[RETCODE.OUT_OF_SUPPORT])
 
 
-
+@app.post("/image/identification")
+async def identity(request: CorrectData):
+    image_bytes = change_format(url=request.url)
+    if not image_bytes:
+        return InterfaceError(code=RETCODE.CHANGE_FORMAT_ERROR, message=err_msg[RETCODE.CHANGE_FORMAT_ERROR])
+    try:
+        response_data = doc_crop_enhance(image_bytes=image_bytes)
+    except Exception as err:
+        return InterfaceError(code=RETCODE.ERROR, message="{}->{}".format(err_msg[RETCODE.ERROR], err))
+    return CardResponse(code=RETCODE.OK, type=RespType.IdentityCard, message=err_msg[RETCODE.OK],
+                        data=response_data)

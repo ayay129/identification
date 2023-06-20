@@ -7,7 +7,7 @@
 import io
 import json
 
-from config import baidu_client,baidu_image_client
+from config import baidu_client, baidu_image_client
 import requests
 from pdf2image import convert_from_bytes
 from PIL import Image
@@ -15,7 +15,7 @@ from docx import Document
 from urllib.parse import urlparse
 import platform
 import base64
-from core.exception import RespType
+from core.exception import RespType, InterfaceError
 from core.const import degree_header, birth_cert_header, passport_header, hk_macau_header
 
 
@@ -118,9 +118,11 @@ def deal_id_card(data, image=True):
     else:
         resp = baidu_client.multi_idcardUrl(url=data, options={"detect_risk": "true", "detect_quality": "true",
                                                                "detect_direction": "true"})
+    # 直接返回内部错误
+    if resp.get("error_code"):
+        return InterfaceError(code=resp.get("error_code"), message=resp.get("error_msg"))
     results = resp["words_result"]
     if not results:
-        # return CardResponse(code=0, type=1, message="Recognize Failure. Cause Unknown")
         return None
     for result in results:
         status = result["card_info"]["image_status"]
@@ -152,9 +154,10 @@ def deal_birth_cert(data, image=True):
         resp = baidu_client.birthCertificate(image=data)
     else:
         resp = baidu_client.birthCertificateUrl(url=data)
+    if resp.get("error_code"):
+        return InterfaceError(code=resp.get("error_code"), message=resp.get("error_msg"))
     results = resp.get("words_result")
     if not results:
-        # return CardResponse(code=1, type=0, message="Recognize Failure. Cause Unknown")
         return None
     # 原始
     response_data["newborn"] = results["BabyName"]["words"]
@@ -190,6 +193,8 @@ def deal_passport(data, image=True):
         resp = baidu_client.passport(image=data)
     else:
         resp = baidu_client.passportUrl(url=data)
+    if resp.get("error_code"):
+        return InterfaceError(code=resp.get("error_code"), message=resp.get("error_msg"))
     results = resp["words_result"]
     if not results:
         return None
@@ -215,7 +220,11 @@ def deal_passport(data, image=True):
 def deal_HkMcau_permit2(image_bytes):
     response_data = {key: "" for key in hk_macau_header}
     resp = baidu_client.accurate(image_bytes)
+    if resp.get("error_code"):
+        return InterfaceError(code=resp.get("error_code"), message=resp.get("error_msg"))
     results = resp["words_result"]
+    if not results:
+        return None
     long_strings = [result["words"] for result in results]
     long_string = ",".join(long_strings)
     if "签注" in long_string or "旅游" in long_string or "往来港澳通行证" not in long_string:
@@ -239,7 +248,11 @@ def deal_HkMcau_permit2(image_bytes):
 def deal_HkMcau_permit(image_bytes):
     response_data = {key: "" for key in hk_macau_header}
     resp = baidu_client.HKMacauExitentrypermit(image=image_bytes)
+    if resp.get("error_code"):
+        return InterfaceError(code=resp.get("error_code"), message=resp.get("error_msg"))
     results = resp["words_result"]
+    if not results:
+        return None
     for key, value in results.items():
         if not value:
             return RespType.HkMacaoPermitBack
@@ -259,7 +272,11 @@ def deal_HkMcau_permit(image_bytes):
 
 def deal_degree_report(image_bytes):
     resp = baidu_client.accurate(image_bytes)
+    if resp.get("error_code"):
+        return InterfaceError(code=resp.get("error_code"), message=resp.get("error_msg"))
     results = resp.get("words_result")
+    if not results:
+        return None
     long_strings = [result["words"] for result in results]
     long_string = ",".join(long_strings)
     if "中国高等教育学位认证报告" in long_string:
@@ -384,19 +401,22 @@ def parse_degree_report_type(long_strings, degree_type=0):
 
 def doc_crop_enhance(image_bytes):
     resp = baidu_client.doc_crop_enhance(image_bytes)
-    image_b64 = resp["image_processed"]
-    image = base64.b64decode(image_b64)
-    with open("test.png", "wb") as f:
-        f.write(image)
-    print(resp)
+    if resp.get("error_code"):
+        return InterfaceError(code=resp.get("error_code"), message=resp.get("error_msg"))
+    image_b64 = resp.get("image_processed")
+    if not image_b64:
+        return None
+    del resp["log_id"]
+    return resp
 
 
-def image_correct(image_path):
-    pass
+# def image_correct(image_path):
+#     pass
 
-# if __name__ == '__main__':
-#     with open("../enhance.jpeg","rb") as f:
-#         image = f.read()
+if __name__ == '__main__':
+    with open("../data/id_card/bcard.jpg", "rb") as f:
+        image = f.read()
+    doc_crop_enhance(image)
 #     # resp = baidu_image_client.imageDefinitionEnhance(image)
 #     resp = baidu_image_client.contrastEnhance(image)
 #     b64image = resp["image"]
