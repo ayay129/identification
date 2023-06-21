@@ -146,5 +146,8 @@ async def identity(request: CorrectData):
         response_data = doc_crop_enhance(image_bytes=image_bytes)
     except Exception as err:
         return InterfaceError(code=RETCODE.ERROR, message="{}->{}".format(err_msg[RETCODE.ERROR], err))
+    if response_data is None:
+        return InterfaceError(code=RETCODE.RECOGNIZE_EMPTY_ERROR,
+                              message=err_msg[RETCODE.RECOGNIZE_EMPTY_ERROR])
     return CardResponse(code=RETCODE.OK, type=RespType.IdentityCard, message=err_msg[RETCODE.OK],
                         data=response_data)
