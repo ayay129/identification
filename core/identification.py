@@ -413,10 +413,10 @@ def doc_crop_enhance(image_bytes):
 # def image_correct(image_path):
 #     pass
 
-if __name__ == '__main__':
-    with open("../data/id_card/bcard.jpg", "rb") as f:
-        image = f.read()
-    doc_crop_enhance(image)
+# if __name__ == '__main__':
+#     with open("../data/id_card/bcard.jpg", "rb") as f:
+#         image = f.read()
+#     doc_crop_enhance(image)
 #     # resp = baidu_image_client.imageDefinitionEnhance(image)
 #     resp = baidu_image_client.contrastEnhance(image)
 #     b64image = resp["image"]
