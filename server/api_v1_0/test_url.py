@@ -79,7 +79,7 @@ for key, value in test_dict.items():
             continue
         resp = requests.post(url="http://127.0.0.1:52520/document/identification", json={
             "url": links,
-            # "input_type": key
+            "input_type": key
         })
         print(resp.text)
 
