@@ -70,8 +70,8 @@ def transfer(url2t):
 
 
 for key, value in test_dict.items():
-    # if key != 4:
-    #     continue
+    if key != 1:
+        continue
     for url in value:
         links = transfer(url)
         if not links:
@@ -79,7 +79,8 @@ for key, value in test_dict.items():
             continue
         resp = requests.post(url="http://127.0.0.1:52520/document/identification", json={
             "url": links,
-            "input_type": key})
+            # "input_type": key
+        })
         print(resp.text)
 
 # for url in urls:

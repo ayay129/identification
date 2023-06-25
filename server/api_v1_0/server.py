@@ -24,11 +24,14 @@ class CorrectData(pydantic.BaseModel):
     url: str
 
 
-class CardResponse(pydantic.BaseModel):
+class BaseResponse(pydantic.BaseModel):
     code: int
-    type: int
     message: str
     data: Optional[dict]
+
+
+class CardResponse(BaseResponse):
+    type: int
 
 
 # pdf/png/jpg/jpeg/word格式
@@ -137,7 +140,7 @@ async def identity(request: PostData):
         return InterfaceError(code=RETCODE.OUT_OF_SUPPORT, message=err_msg[RETCODE.OUT_OF_SUPPORT])
 
 
-@app.post("/image/identification")
+@app.post("/image/correct")
 async def identity(request: CorrectData):
     image_bytes = change_format(url=request.url)
     if not image_bytes:
@@ -149,5 +152,9 @@ async def identity(request: CorrectData):
     if response_data is None:
         return InterfaceError(code=RETCODE.RECOGNIZE_EMPTY_ERROR,
                               message=err_msg[RETCODE.RECOGNIZE_EMPTY_ERROR])
-    return CardResponse(code=RETCODE.OK, type=RespType.IdentityCard, message=err_msg[RETCODE.OK],
-                        data=response_data)
+    return BaseResponse(code=RETCODE.OK, message=err_msg[RETCODE.OK], data=response_data)
+
+
+@app.post("/document/general")
+async def identify(request: PostData):
+    pass
