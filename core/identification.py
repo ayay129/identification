@@ -19,6 +19,7 @@ from core.exception import RespType, InterfaceError
 from core.const import degree_header, birth_cert_header, passport_header, hk_macau_header
 
 
+# pdf转图片
 def pdf_to_image_stream(image_bytes):
     if platform.system().lower() == "windows":
         images = convert_from_bytes(image_bytes, poppler_path="D:\\Program Files (x86)\\poppler-23.05.0\\Library\\bin")
@@ -49,6 +50,7 @@ def pdf_to_image_stream(image_bytes):
     return image_stream
 
 
+# 文件格式转换逻辑
 def change_format(url):
     resp = requests.get(url)
     if resp.status_code != 200:
@@ -56,16 +58,20 @@ def change_format(url):
     image_bytes = resp.content
     url_path = urlparse(url).path
     if url_path.lower().endswith((".png", ".jpg", ".jpeg", ".bmp")):
+        # 图片->转换大小
         image = image_procedure(image_bytes)
     elif url_path.lower().endswith(".pdf"):
+        # pdf，转图片
         image = pdf_to_image_stream(image_bytes)
     elif url_path.lower().endswith(".doc"):
+        # word，转图片
         image = word_to_image(image_bytes)
     else:
         return False
     return image
 
 
+# 图片大小处理
 def image_procedure(image_bytes):
     image = Image.open(io.BytesIO(image_bytes))
     # 获取图像的原始尺寸
@@ -110,6 +116,7 @@ def word_to_image(image_bytes):
     return concatenated_image
 
 
+# 身份证
 def deal_id_card(data, image=True):
     response_data = {}
     if image:
@@ -148,6 +155,7 @@ def deal_id_card(data, image=True):
     return response_data
 
 
+# 出生证
 def deal_birth_cert(data, image=True):
     response_data = {key: "" for key in birth_cert_header}
     if image:
@@ -187,6 +195,7 @@ def deal_birth_cert(data, image=True):
     return response_data
 
 
+# 护照
 def deal_passport(data, image=True):
     response_data = {key: "" for key in passport_header}
     if image:
@@ -245,6 +254,7 @@ def deal_HkMcau_permit2(image_bytes):
         return response_data
 
 
+# 港澳通行证
 def deal_HkMcau_permit(image_bytes):
     response_data = {key: "" for key in hk_macau_header}
     resp = baidu_client.HKMacauExitentrypermit(image=image_bytes)
@@ -270,6 +280,7 @@ def deal_HkMcau_permit(image_bytes):
     return response_data
 
 
+# 处理各种格式学位认证报告
 def deal_degree_report(image_bytes):
     resp = baidu_client.accurate(image_bytes)
     if resp.get("error_code"):
@@ -291,6 +302,7 @@ def deal_degree_report(image_bytes):
     return response_data
 
 
+# 解析学位认证报告
 def parse_degree_report_type(long_strings, degree_type=0):
     response_data = {key: "" for key in degree_header}
     if not degree_type:
@@ -399,6 +411,7 @@ def parse_degree_report_type(long_strings, degree_type=0):
     return response_data
 
 
+# 图片纠正
 def doc_crop_enhance(image_bytes):
     resp = baidu_client.doc_crop_enhance(image_bytes)
     if resp.get("error_code"):

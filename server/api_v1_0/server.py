@@ -15,13 +15,12 @@ from core.identification import deal_passport, deal_id_card, deal_HkMcau_permit,
 app = FastAPI()
 
 
-class PostData(pydantic.BaseModel):
+class UrlData(pydantic.BaseModel):
     url: str
+
+
+class PostData(UrlData):
     input_type: int
-
-
-class CorrectData(pydantic.BaseModel):
-    url: str
 
 
 class BaseResponse(pydantic.BaseModel):
@@ -141,7 +140,7 @@ async def identity(request: PostData):
 
 
 @app.post("/image/correct")
-async def identity(request: CorrectData):
+async def identity(request: UrlData):
     image_bytes = change_format(url=request.url)
     if not image_bytes:
         return InterfaceError(code=RETCODE.CHANGE_FORMAT_ERROR, message=err_msg[RETCODE.CHANGE_FORMAT_ERROR])
@@ -156,5 +155,5 @@ async def identity(request: CorrectData):
 
 
 @app.post("/document/general")
-async def identify(request: PostData):
+async def identify(request: UrlData):
     pass

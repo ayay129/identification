@@ -10,12 +10,13 @@ import requests
 # 身份证
 id_urls = [
     "https://upload.cdn.galaxy-immi.com/crm/test/files/10029/1686641661087.jpg",
-           "https://upload.cdn.galaxy-immi.com/crm/production/files/6058/1657076550912.jpg",
-           "https://upload.cdn.galaxy-immi.com/crm/production/files/6058/1657076559505.jpg",
-           "https://upload.cdn.galaxy-immi.com/crm/production/files/1659612739360.jpg",
-           "https://upload.cdn.galaxy-immi.com/crm/production/files/1659612748670.jpg",
-           "https://upload.cdn.galaxy-immi.com/crm/production/files/1659665753619.jpg",
-           "https://upload.cdn.galaxy-immi.com/crm/production/files/7891/1660562337192.pdf"]
+    "https://upload.cdn.galaxy-immi.com/crm/production/files/6058/1657076550912.jpg",
+    "https://upload.cdn.galaxy-immi.com/crm/production/files/6058/1657076559505.jpg",
+    "https://upload.cdn.galaxy-immi.com/crm/production/files/1659612739360.jpg",
+    "https://upload.cdn.galaxy-immi.com/crm/production/files/1659612748670.jpg",
+    "https://upload.cdn.galaxy-immi.com/crm/production/files/1659665753619.jpg",
+    "https://upload.cdn.galaxy-immi.com/crm/production/files/7891/1660562337192.pdf"
+]
 # #
 # 港澳通行证
 hk_urls = [
@@ -36,7 +37,8 @@ born_urls = [
     "https://upload.cdn.galaxy-immi.com/crm/test/files/10029/1686656152017.pdf",
     "https://upload.cdn.galaxy-immi.com/crm/production/files/7861/1660620969527.pdf",
     "https://upload.cdn.galaxy-immi.com/crm/production/files/7868/1660874135227.jpg",
-    "https://upload.cdn.galaxy-immi.com/crm/production/files/7870/1662184804891.jpg"]
+    "https://upload.cdn.galaxy-immi.com/crm/production/files/7870/1662184804891.jpg"
+]
 
 # 护照
 pass_port_urls = [
