@@ -116,6 +116,10 @@ def word_to_image(image_bytes):
     return concatenated_image
 
 
+def read_doc(url):
+    pass
+
+
 # 身份证
 def deal_id_card(data, image=True):
     response_data = {}
@@ -421,7 +425,6 @@ def doc_crop_enhance(image_bytes):
         return None
     del resp["log_id"]
     return resp
-
 
 # def image_correct(image_path):
 #     pass
