@@ -6,7 +6,6 @@
 # @File: identification.py
 import io
 import json
-
 from config import baidu_client, baidu_image_client
 import requests
 from pdf2image import convert_from_bytes
@@ -14,13 +13,12 @@ from PIL import Image
 from docx import Document
 from urllib.parse import urlparse
 import platform
-import base64
 from core.exception import RespType, InterfaceError
 from core.const import degree_header, birth_cert_header, passport_header, hk_macau_header
 
 
 # pdf转图片
-def pdf_to_image_stream(image_bytes):
+def pdf_to_image_stream(image_bytes, page=1):
     if platform.system().lower() == "windows":
         images = convert_from_bytes(image_bytes, poppler_path="D:\\Program Files (x86)\\poppler-23.05.0\\Library\\bin")
     else:
@@ -28,7 +26,7 @@ def pdf_to_image_stream(image_bytes):
     # 多页拼接
     # if len(images) > 2:
     #     images = images[:2]
-    images = images[:1]
+    images = images[:page]
     total_height = sum(image.height for image in images)
     max_width = max(image.width for image in images)
     # 拼接图,底图
@@ -426,10 +424,11 @@ def doc_crop_enhance(image_bytes):
     del resp["log_id"]
     return resp
 
-# def image_correct(image_path):
-#     pass
-
 # if __name__ == '__main__':
+#     with open("../data/dismantle/1687184654498.docx","rb") as f:
+#         document = Document(f)
+#     for paragraph in document.paragraphs:
+#         print(paragraph.text)
 #     with open("../data/id_card/bcard.jpg", "rb") as f:
 #         image = f.read()
 #     doc_crop_enhance(image)
