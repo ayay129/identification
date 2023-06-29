@@ -4,16 +4,15 @@
 # @Author: Rangers
 # @Site: AIGC生产线，多类型文件识别
 # @File: aigc_multi_class.py
+import os
 import platform
 import subprocess
+import threading
 
 import requests
-import zipfile
-import rarfile
 from pdf2image import convert_from_bytes
 import io
 from core.identification import image_procedure
-import win32com.client as win32
 from docx import Document
 from config import baidu_client
 from openpyxl import load_workbook
@@ -70,23 +69,18 @@ def image_stream_deal(data_bytes):
 
 def doc2content(data_bytes):
     # doc文件读取
-    doc_stream = io.BytesIO(data_bytes)
-    data = []
-    if platform.system().lower() == "windows":
-        word_app = win32.Dispatch("Word.Application")
-        doc = word_app.Documents.Open(doc_stream)
-        for paragraph in doc.Paragraphs:
-            text = paragraph.Range.Text.strip()
-            if text.strip():
-                data.append(text.strip())
-        doc.Close()
-        word_app.Quit()
-    else:
-        output = subprocess.check_output(["antiword", "-"], input=doc_stream.getvalue())
-        text = output.decode("utf-8")
-        if text.strip():
-            data.append(text)
-    return ["\n".join(data)]
+    thread_id = threading.get_ident()
+    doc_file = "{}_temp.doc".format(thread_id)
+    with open(doc_file, "wb") as f:
+        f.write(data_bytes)
+    subprocess.run(["soffice", "--headless", "--convert-to", "docx", doc_file])
+    docx_file = "{}_temp.docx".format(thread_id)
+    with open(docx_file, "rb") as f:
+        docx_binary = f.read()
+    content = docx2content(docx_binary)
+    os.remove(doc_file)
+    os.remove(docx_file)
+    return content
 
 
 def docx2content(data_bytes, page=None):
@@ -103,7 +97,7 @@ def docx2content(data_bytes, page=None):
     return [result]
 
 
-def xlsx2content(data_types):
+def xlsx2content(data_bytes):
     excel_file = io.BytesIO(data_bytes)
     wb = load_workbook(excel_file)
     ws = wb.active
@@ -122,7 +116,7 @@ def xlsx2content(data_types):
     return result
 
 
-def xls2content(data_types):
+def xls2content(data_bytes):
     excel_file = io.BytesIO(data_bytes)
     data = open_workbook(file_contents=excel_file.read())
     table = data.sheets()[0]
@@ -138,13 +132,13 @@ def xls2content(data_types):
     return data
 
 
-def txt2content(data_types):
+def txt2content(data_bytes):
     stream = io.BytesIO(data_bytes)
     text = stream.read().decode("utf-8")
     return text
 
 
-def ppt_or_pptx2content(data_types):
+def ppt_or_pptx2content(data_bytes):
     stream = io.BytesIO(data_bytes)
     presentation = Presentation(stream)
     data = []
@@ -160,22 +154,32 @@ def ppt_or_pptx2content(data_types):
     return ["\n".join(data)]
 
 
+# docx:6390, pdf 4007, jpg 1970,doc 1934,png 1543,
+# pptx 520,xlsx 255, txt 98, ppt 59
+# xls 59, zip 40, rar 10
 def distribute_file_class(url):
-    pass
+    resp = requests.get(url)
+    if resp.status_code != 200:
+        return
+    if url.lower().endswith(".docx"):
+        docx2content(data_bytes=resp.content)
+    elif url.lower().endswith(".doc"):
+        doc2content(data_bytes=resp.content)
+    elif url.lower().endswith(".pdf"):
+        pdf_to_image_page_stream(data_bytes=resp.content)
+    elif url.lower().endswith((".pptx", ".ppt")):
+        ppt_or_pptx2content(resp.content)
+    elif url.lower().endswith((".jpg", "png")):
+        image_stream_deal(data_bytes=resp.content)
+    elif url.lower().endswith(".txt"):
+        txt2content(data_bytes=resp.content)
+    elif url.lower().endswith(".xls"):
+        xls2content(data_bytes=resp.content)
+    elif url.lower().endswith(".xlsx"):
+        xlsx2content(data_bytes=resp.content)
+    else:
+        pass
 
 
 if __name__ == '__main__':
-    # with open("../data/dismantle/1687184654498.doc", "rb") as f:
-    #     data_bytes = f.read()
-    with open("../data/dismantle/1687184654498.doc", "rb") as f:
-        data_bytes = f.read()
-    # test = doc2content(data_bytes)
-    # test = pdf_to_image_page_stream(data_bytes)
-    # test = image_stream_deal(data_bytes=data_bytes)
-    test = doc2content(data_bytes=data_bytes)
-    # test = ppt_or_pptx2content(data_types=data_bytes)
-    # test = xlsx2content(data_bytes)
-    # test = xls2content(data_bytes)
-    # test = ppt_or_pptx2content(data_bytes)
-    print(test)
-    print(len(test))
+    pass
