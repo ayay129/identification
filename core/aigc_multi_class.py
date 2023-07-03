@@ -8,7 +8,9 @@ import os
 import platform
 import subprocess
 import threading
-
+import zipfile
+from urllib.parse import urlparse
+import rarfile
 import requests
 from pdf2image import convert_from_bytes
 import io
@@ -36,7 +38,7 @@ def pdf_to_image_page_stream(data_bytes, page=3):
         images = images[:page]
     # 调整大小
     stream = io.BytesIO()
-    data = []
+    result_str = ""
     for image in images:
         image.save(stream, format="PNG", quality=90)
         image_stream = stream.getvalue()
@@ -49,9 +51,8 @@ def pdf_to_image_page_stream(data_bytes, page=3):
         if not results:
             continue
         long_strings = [result["words"] for result in results]
-        long_strings = "\n".join(long_strings)
-        data.append(long_strings)
-    return data
+        result_str += "\n".join(long_strings) + "\n\n\n"
+    return result_str
 
 
 def image_stream_deal(data_bytes):
@@ -64,7 +65,7 @@ def image_stream_deal(data_bytes):
         return None
     long_strings = [result["words"] for result in results]
     long_strings = "\n".join(long_strings)
-    return [long_strings]
+    return long_strings
 
 
 def doc2content(data_bytes):
@@ -94,7 +95,7 @@ def docx2content(data_bytes, page=None):
         if paragraph.text:
             data.append(paragraph.text)
     result = "\n".join(data)
-    return [result]
+    return result
 
 
 def xlsx2content(data_bytes):
@@ -112,8 +113,8 @@ def xlsx2content(data_bytes):
             elif not lattice.value.strip():
                 continue
             data.append(lattice.value.strip())
-    result = ["\n".join(data)]
-    return result
+    result_str = "\n".join(data)
+    return result_str
 
 
 def xls2content(data_bytes):
@@ -129,7 +130,8 @@ def xls2content(data_bytes):
             for i in range(n_cols):
                 if row[i].strip():
                     data.append(row[i].strip())
-    return data
+    result_str = "\n".join(data)
+    return result_str
 
 
 def txt2content(data_bytes):
@@ -151,35 +153,98 @@ def ppt_or_pptx2content(data_bytes):
                 if not text.strip():
                     continue
                 data.append(text)
-    return ["\n".join(data)]
+    result_str = "\n".join(data)
+    return result_str
 
 
 # docx:6390, pdf 4007, jpg 1970,doc 1934,png 1543,
 # pptx 520,xlsx 255, txt 98, ppt 59
 # xls 59, zip 40, rar 10
+def zip_uncompress2content(data_bytes):
+    memory_file = io.BytesIO(data_bytes)
+    data = []
+    with zipfile.ZipFile(memory_file, "r") as zip:
+        file_list = zip.namelist()
+        for file_name in file_list:
+            with zip.open(file_name) as file:
+                # 读取文件的二进制流
+                binary_data = file.read()
+                content = judge_url_class(file_name, data_bytes=binary_data)
+                if not content:
+                    continue
+                data.append(content)
+    return data
+
+
+def rar_uncompress2content(data_bytes):
+    memory_file = io.BytesIO(data_bytes)
+    data = []
+    with rarfile.RarFile(memory_file, "r") as rar:
+        file_list = rar.namelist()
+        for file_name in file_list:
+            with rar.open(file_name) as file:
+                binary_data = file.read()
+                content = judge_url_class(file_name, data_bytes=binary_data)
+                if not content:
+                    continue
+                data.append(content)
+    return data
+
+
+def judge_file_class(url, data_bytes):
+    pass
+
+
+def judge_url_class(url, data_bytes):
+    url_path = urlparse(url).path
+    if url_path.lower().endswith(".docx"):
+        data = docx2content(data_bytes)
+    elif url_path.lower().endswith(".doc"):
+        data = doc2content(data_bytes)
+    elif url_path.lower().endswith(".pdf"):
+        data = pdf_to_image_page_stream(data_bytes)
+    elif url_path.lower().endswith((".pptx", ".ppt")):
+        data = ppt_or_pptx2content(data_bytes)
+    elif url_path.lower().endswith((".jpg", "png")):
+        data = image_stream_deal(data_bytes)
+    elif url_path.lower().endswith(".txt"):
+        data = txt2content(data_bytes)
+    elif url_path.lower().endswith(".xls"):
+        data = xls2content(data_bytes)
+    elif url_path.lower().endswith(".xlsx"):
+        data = xlsx2content(data_bytes)
+    elif url_path.lower().endswith(".zip"):
+        data = zip_uncompress2content(data_bytes)
+    elif url_path.lower().endswith(".rar"):
+        data = rar_uncompress2content(data_bytes)
+    else:
+        data = None
+    return data
+
+
+def test():
+    # resp = requests.get(url)
+    # if resp.status_code != 200:
+    #     return
+    # data = judge_file_class(url, data_bytes=resp.content)
+    for root, dirs, files in os.walk("../data/dismantle"):
+        for name in files:
+            file_name = "{}/{}".format(root, name)
+            print(file_name)
+            with open(file_name, "rb") as f:
+                data_bytes = f.read()
+                data = judge_url_class(file_name, data_bytes)
+            print(data)
+            print("-" * 100)
+
+
 def distribute_file_class(url):
     resp = requests.get(url)
     if resp.status_code != 200:
         return
-    if url.lower().endswith(".docx"):
-        docx2content(data_bytes=resp.content)
-    elif url.lower().endswith(".doc"):
-        doc2content(data_bytes=resp.content)
-    elif url.lower().endswith(".pdf"):
-        pdf_to_image_page_stream(data_bytes=resp.content)
-    elif url.lower().endswith((".pptx", ".ppt")):
-        ppt_or_pptx2content(resp.content)
-    elif url.lower().endswith((".jpg", "png")):
-        image_stream_deal(data_bytes=resp.content)
-    elif url.lower().endswith(".txt"):
-        txt2content(data_bytes=resp.content)
-    elif url.lower().endswith(".xls"):
-        xls2content(data_bytes=resp.content)
-    elif url.lower().endswith(".xlsx"):
-        xlsx2content(data_bytes=resp.content)
-    else:
-        pass
+    data = judge_url_class(url, data_bytes=resp.content)
+    return data
 
 
-if __name__ == '__main__':
-    pass
+# if __name__ == '__main__':
+#     test()

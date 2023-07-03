@@ -11,6 +11,7 @@ from typing import Optional, List
 from core.exception import ReqType, RETCODE, err_msg, RespType, InterfaceError
 from core.identification import deal_passport, deal_id_card, deal_HkMcau_permit, deal_birth_cert, change_format, \
     deal_degree_report, doc_crop_enhance
+from core.aigc_multi_class import distribute_file_class
 
 app = FastAPI()
 
@@ -26,7 +27,7 @@ class PostData(UrlData):
 class BaseResponse(pydantic.BaseModel):
     code: int
     message: str
-    data: Optional[dict]
+    data: Optional[dict | str]
 
 
 class CardResponse(BaseResponse):
@@ -156,4 +157,10 @@ async def identity(request: UrlData):
 
 @app.post("/document/general")
 async def identify(request: UrlData):
-    pass
+    try:
+        response_data = distribute_file_class(url=request.url)
+        if not response_data:
+            raise ValueError
+    except Exception as err:
+        return InterfaceError(code=RETCODE.ERROR, message="{}->{}".format(err_msg[RETCODE.ERROR], err))
+    return BaseResponse(code=RETCODE.OK, message=err_msg[RETCODE.OK], data=response_data)

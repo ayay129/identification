@@ -34,10 +34,11 @@ hk_urls = [
 #
 # 出生证
 born_urls = [
-    "https://upload.cdn.galaxy-immi.com/crm/test/files/10029/1686656152017.pdf",
-    "https://upload.cdn.galaxy-immi.com/crm/production/files/7861/1660620969527.pdf",
-    "https://upload.cdn.galaxy-immi.com/crm/production/files/7868/1660874135227.jpg",
-    "https://upload.cdn.galaxy-immi.com/crm/production/files/7870/1662184804891.jpg"
+    # "https://upload.cdn.galaxy-immi.com/crm/test/files/10029/1686656152017.pdf",
+    # "https://upload.cdn.galaxy-immi.com/crm/production/files/7861/1660620969527.pdf",
+    # "https://upload.cdn.galaxy-immi.com/crm/production/files/7868/1660874135227.jpg",
+    # "https://upload.cdn.galaxy-immi.com/crm/production/files/7870/1662184804891.jpg"
+    "https://upload.cdn.galaxy-immi.com/crm/production/files/14535/1688104083055.pdf"
 ]
 
 # 护照
@@ -62,6 +63,18 @@ test_dict = {
     5: degree_urls
 }
 
+dismantle = {
+    "https://upload.cdn.galaxy-immi.com/crm/test/files/10416/1688355236313.jpg",
+    "https://upload.cdn.galaxy-immi.com/crm/test/files/10416/1688355244577.xls",
+    "https://upload.cdn.galaxy-immi.com/crm/test/files/10416/1688355437563.pdf",
+    "https://upload.cdn.galaxy-immi.com/crm/test/files/10416/1688355456810.pptx",
+    "https://upload.cdn.galaxy-immi.com/crm/test/files/10416/1688355426891.docx",
+    "https://upload.cdn.galaxy-immi.com/crm/test/files/10416/1688355415260.ppt",
+    "https://upload.cdn.galaxy-immi.com/crm/test/files/10416/1688366693905.doc",
+    "https://upload.cdn.galaxy-immi.com/crm/test/files/10416/1688366700252.png",
+    "https://upload.cdn.galaxy-immi.com/crm/test/files/10416/1688366705399.xlsx"
+}
+
 
 def transfer(url2t):
     url = "http://test.crm.galaxy-immi.com/business/temp/temp-url"
@@ -71,27 +84,34 @@ def transfer(url2t):
         return response.json()['data']['url']
 
 
-for key, value in test_dict.items():
-    if key != 1:
-        continue
-    for url in value:
+def main():
+    for key, value in test_dict.items():
+        if key != 2:
+            continue
+        for url in value:
+            links = transfer(url)
+            print(links)
+            if not links:
+                print(links)
+                continue
+            resp = requests.post(url="http://127.0.0.1:52520/document/identification", json={
+                "url": links,
+                "input_type": key
+            })
+            print(resp.text)
+
+
+def test_dis():
+    for url in dismantle:
         links = transfer(url)
         if not links:
-            print(links)
             continue
-        resp = requests.post(url="http://127.0.0.1:52520/document/identification", json={
-            "url": links,
-            "input_type": key
+        resp = requests.post(url="http://127.0.0.1:52520/document/general", json={
+            "url": links
         })
+        print(links)
         print(resp.text)
 
-# for url in urls:
-#     links = transfer(url)
-#     images = pdf_to_image_stream(pdf_url=links)
-#     resp = baidu_client.birthCertificate(image=images)
-#     print(resp)
 
-# with open("./你好.png","rb") as f:
-#     images = f.read()
-#     resp = baidu_client.birthCertificate(image=images)
-#     print(resp)
+if __name__ == '__main__':
+    test_dis()
