@@ -21,23 +21,23 @@ id_urls = [
 # 港澳通行证
 hk_urls = [
     "https://upload.cdn.galaxy-immi.com/crm/test/files/10074/1686807812049.jpeg"
-    # "https://upload.cdn.galaxy-immi.com/crm/test/files/10029/1686791992786.jpg",
-    # "https://upload.cdn.galaxy-immi.com/crm/test/files/10070/1686744354080.jpg",
-    # "https://upload.cdn.galaxy-immi.com/crm/test/files/10070/1686736171514.jpg",
-    # "https://upload.cdn.galaxy-immi.com/crm/production/files/6058/1656294519622.jpg",
-    # "https://upload.cdn.galaxy-immi.com/crm/production/files/1659612754369.jpg",
-    # "https://upload.cdn.galaxy-immi.com/crm/production/files/1659615211045.jpg",
-    # "https://upload.cdn.galaxy-immi.com/crm/production/files/7888/1660919894772.png",
-    # "https://upload.cdn.galaxy-immi.com/crm/test/files/10029/1686730110871.jpg",
-    # "https://upload.cdn.galaxy-immi.com/crm/test/files/10070/1686738383100.jpg"
+    "https://upload.cdn.galaxy-immi.com/crm/test/files/10029/1686791992786.jpg",
+    "https://upload.cdn.galaxy-immi.com/crm/test/files/10070/1686744354080.jpg",
+    "https://upload.cdn.galaxy-immi.com/crm/test/files/10070/1686736171514.jpg",
+    "https://upload.cdn.galaxy-immi.com/crm/production/files/6058/1656294519622.jpg",
+    "https://upload.cdn.galaxy-immi.com/crm/production/files/1659612754369.jpg",
+    "https://upload.cdn.galaxy-immi.com/crm/production/files/1659615211045.jpg",
+    "https://upload.cdn.galaxy-immi.com/crm/production/files/7888/1660919894772.png",
+    "https://upload.cdn.galaxy-immi.com/crm/test/files/10029/1686730110871.jpg",
+    "https://upload.cdn.galaxy-immi.com/crm/test/files/10070/1686738383100.jpg"
 ]
 #
 # 出生证
 born_urls = [
-    # "https://upload.cdn.galaxy-immi.com/crm/test/files/10029/1686656152017.pdf",
-    # "https://upload.cdn.galaxy-immi.com/crm/production/files/7861/1660620969527.pdf",
-    # "https://upload.cdn.galaxy-immi.com/crm/production/files/7868/1660874135227.jpg",
-    # "https://upload.cdn.galaxy-immi.com/crm/production/files/7870/1662184804891.jpg"
+    "https://upload.cdn.galaxy-immi.com/crm/test/files/10029/1686656152017.pdf",
+    "https://upload.cdn.galaxy-immi.com/crm/production/files/7861/1660620969527.pdf",
+    "https://upload.cdn.galaxy-immi.com/crm/production/files/7868/1660874135227.jpg",
+    "https://upload.cdn.galaxy-immi.com/crm/production/files/7870/1662184804891.jpg"
     "https://upload.cdn.galaxy-immi.com/crm/production/files/14535/1688104083055.pdf"
 ]
 
@@ -80,14 +80,17 @@ def transfer(url2t):
     url = "http://test.crm.galaxy-immi.com/business/temp/temp-url"
     data = {"field": url2t}
     response = requests.get(url=url, params=data)
-    if 200 == response.status_code:
-        return response.json()['data']['url']
+    try:
+        if 200 == response.status_code:
+            return response.json()['data']['url']
+    except Exception as err:
+        return None
 
 
 def main():
     for key, value in test_dict.items():
-        if key != 2:
-            continue
+        # if key != 2:
+        #     continue
         for url in value:
             links = transfer(url)
             print(links)
@@ -114,4 +117,5 @@ def test_dis():
 
 
 if __name__ == '__main__':
-    test_dis()
+    # test_dis()
+    main()
