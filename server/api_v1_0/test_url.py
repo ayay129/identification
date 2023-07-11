@@ -94,8 +94,8 @@ def transfer(url2t):
 
 def main():
     for key, value in test_dict.items():
-        # if key != 10:
-        #     continue
+        if key != 10:
+            continue
         for url in value:
             links = transfer(url)
             print(links)
@@ -121,6 +121,18 @@ def test_dis():
         print(resp.text)
 
 
+def test_human_face():
+    first_url = "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1685624368732.jpg"
+    second_url = "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1689044492094.jpg"
+    first_link = transfer(first_url)
+    second_link = transfer(second_url)
+
+    resp = requests.post(url="http://127.0.0.1:52520/face/compare",
+                         json={"first_image_url": first_link, "second_image_url": second_link})
+    print(resp.text)
+
+
 if __name__ == '__main__':
     # test_dis()
-    main()
+    # main()
+    test_human_face()

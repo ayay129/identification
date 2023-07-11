@@ -6,7 +6,7 @@
 # @File: face_server.py
 
 from server.api_v1_0 import app
-from server.bodys import InterfaceError, FaceReq, CardResponse
+from server.bodys import InterfaceError, FaceReq, BaseResponse
 from core.identification import change_format, face_compare
 from core.const import ReqType, RETCODE, err_msg, RespType
 
@@ -20,8 +20,7 @@ def compare(request: FaceReq):
         result = resp["result"]
         if not isinstance(result, dict) or not result:
             raise Exception("result get error")
-
     except Exception as err:
-        return InterfaceError(code=RETCODE.ERROR, msg=err_msg[RETCODE.ERROR] + "->{}".format(err))
+        return InterfaceError(code=RETCODE.ERROR, message=err_msg[RETCODE.ERROR] + "->{}".format(err))
     result["timestamp"] = resp["timestamp"]
-    return CardResponse(code=RETCODE.OK, msg=err_msg[RETCODE.OK], data=result)
+    return BaseResponse(code=RETCODE.OK, message=err_msg[RETCODE.OK], data=result)

@@ -6,10 +6,11 @@
 # @File: __init__.py.py
 import base64
 
-import requests
 from aip import AipOcr, AipImageProcess, AipFace
 from core.parser import YamlParser
 import os
+from fastapi.logger import logger
+
 
 
 class DefineOcr(AipOcr):
@@ -36,3 +37,6 @@ baidu_image_client = AipImageProcess(str(baidu_ocr_env["app_id"]), str(baidu_ocr
 
 baidu_face_client = AipFace(str(baidu_ocr_env["app_id"]), str(baidu_ocr_env["api_key"]),
                             str(baidu_ocr_env["secret_key"]))
+# logging.config.fileConfig(os.path.join(yaml_dir, 'logging.conf'))
+# logger = logging.getLogger("fast-api")
+
