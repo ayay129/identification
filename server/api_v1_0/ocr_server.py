@@ -3,45 +3,29 @@
 # @Time: 2023-06-06 16:57
 # @Author: Rangers
 # @Site: 
-# @File: server.py
+# @File: ocr_server.py
 
-from fastapi import FastAPI, Response
-import pydantic
-from typing import Optional, List
-from core.exception import ReqType, RETCODE, err_msg, RespType, InterfaceError
+from server.api_v1_0 import app
+from server.bodys import PostData, CardResponse, UrlData, BaseResponse, InterfaceError
+from core.const import RETCODE, RespType, err_msg, ReqType
 from core.identification import deal_passport, deal_id_card, deal_HkMcau_permit, deal_birth_cert, change_format, \
-    deal_degree_report, doc_crop_enhance
+    deal_degree_report, doc_crop_enhance, deal_marriage_cert
 from core.aigc_multi_class import distribute_file_class
-
-app = FastAPI()
-
-
-class UrlData(pydantic.BaseModel):
-    url: str
-
-
-class PostData(UrlData):
-    input_type: int
-
-
-class BaseResponse(pydantic.BaseModel):
-    code: int
-    message: str
-    data: Optional[dict | str]
-
-
-class CardResponse(BaseResponse):
-    type: int
 
 
 # pdf/png/jpg/jpeg/word格式
 # 'words_result': {'姓名': {'location': {'top': 101, 'left': 184, 'width': 86, 'height': 38}, 'words': '孙么'}, '民族': {'location': {'top': 167, 'left': 362, 'width': 26, 'height': 29}, 'words': '汉'}, '住址': {'location': {'top': 281, 'left': 184, 'width': 304, 'height': 71}, 'words': '内蒙古通辽市科尔沁区永清十委14组179号'}, '公民身份号码': {'location': {'top': 428, 'left': 343, 'width': 396, 'height': 38}, 'words': '152301199802185042'}, '出生': {'location': {'top': 222, 'left': 180, 'width': 304, 'height': 30}, 'words': '19980218'}, '性别': {'location': {'top': 166, 'left': 190, 'width': 27, 'height': 31}, 'words': '女'}}, 'words_result_num': 6, 'idcard_number_type': 1, 'image_status': 'normal', 'risk_type': 'screen', 'log_id': 1666721773649062414}
 @app.post("/document/identification")
 async def identity(request: PostData):
+    """
+    身份证，港澳通行证，学位认证报告，出生证，护照识别
+    :param request: input_type，指定证件类型; .url 指定可访问的证件url地址
+    :return:
+    """
     image_bytes = change_format(url=request.url)
     if not image_bytes:
         return InterfaceError(code=RETCODE.CHANGE_FORMAT_ERROR, message=err_msg[RETCODE.CHANGE_FORMAT_ERROR])
-    # 身份证
+    # 1.身份证
     if request.input_type == ReqType.IdentityCard:
         try:
             response_data = deal_id_card(image_bytes)
@@ -63,7 +47,7 @@ async def identity(request: PostData):
         else:
             return CardResponse(code=RETCODE.OK, type=RespType.IdentityCard, message=err_msg[RETCODE.OK],
                                 data=response_data)
-    # 出生证
+    # 2.出生证
     elif request.input_type == ReqType.BirthCert:
         try:
             response_data = deal_birth_cert(image_bytes)
@@ -77,7 +61,7 @@ async def identity(request: PostData):
             return response_data
         # 正常
         return CardResponse(code=RETCODE.OK, type=RespType.BirthCert, message=err_msg[RETCODE.OK], data=response_data)
-    # 护照
+    # 3.护照
     elif request.input_type == ReqType.PassPort:
         try:
             response_data = deal_passport(image_bytes)
@@ -91,7 +75,7 @@ async def identity(request: PostData):
             return response_data
         # 正常
         return CardResponse(code=RETCODE.OK, type=RespType.PassPort, message=err_msg[RETCODE.OK], data=response_data)
-    # 港澳通行证
+    # 4. 港澳通行证
     elif request.input_type == ReqType.HkMacaoPermit:
         # 转二进制
         try:
@@ -120,8 +104,8 @@ async def identity(request: PostData):
             # 混贴
             return CardResponse(code=RETCODE.OK, type=RespType.HkMacaoPermit, message=err_msg[RETCODE.OK],
                                 data=response_data)
-    # 学位证 type 5
-    elif request.input_type == ReqType.Degree:
+    # 5. 学位证 type 5
+    elif request.input_type == ReqType.DegreeCertReport:
         try:
             response_data = deal_degree_report(image_bytes)
         except Exception as err:
@@ -133,7 +117,17 @@ async def identity(request: PostData):
             return InterfaceError(code=RETCODE.RECOGNIZE_EMPTY_ERROR,
                                   message=err_msg[RETCODE.RECOGNIZE_EMPTY_ERROR])
         # 正常
-        return CardResponse(code=RETCODE.OK, type=RespType.Degree, message=err_msg[RETCODE.OK],
+        return CardResponse(code=RETCODE.OK, type=RespType.DegreeCertReport, message=err_msg[RETCODE.OK],
+                            data=response_data)
+    # 结婚证
+    elif request.input_type == ReqType.Marriage:
+        try:
+            response_data = deal_marriage_cert(image_bytes)
+        except Exception as err:
+            return InterfaceError(code=RETCODE.ERROR, message="{}->{}".format(err_msg[RETCODE.ERROR], err))
+        if isinstance(response_data, InterfaceError):
+            return response_data
+        return CardResponse(code=RETCODE.OK, type=RespType.Marriage, message=err_msg[RETCODE.OK],
                             data=response_data)
     # 非范围内
     else:
@@ -142,6 +136,11 @@ async def identity(request: PostData):
 
 @app.post("/image/correct")
 async def identity(request: UrlData):
+    """
+    图片纠正
+    :param request: .url 图片url地址
+    :return:
+    """
     image_bytes = change_format(url=request.url)
     if not image_bytes:
         return InterfaceError(code=RETCODE.CHANGE_FORMAT_ERROR, message=err_msg[RETCODE.CHANGE_FORMAT_ERROR])

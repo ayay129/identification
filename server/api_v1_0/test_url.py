@@ -55,12 +55,17 @@ degree_urls = [
     "https://upload.cdn.galaxy-immi.com/crm/test/files/10070/1686725282010.pdf"
 ]
 
+marriage_urls = [
+    # "https://upload.cdn.galaxy-immi.com/crm/test/files/168897785083018018.png",
+    "https://upload.cdn.galaxy-immi.com/crm/test/files/10368/1689040846177.jpg"
+]
 test_dict = {
     1: id_urls,
     2: born_urls,
     3: pass_port_urls,
     4: hk_urls,
-    5: degree_urls
+    5: degree_urls,
+    10: marriage_urls
 }
 
 dismantle = {
@@ -89,7 +94,7 @@ def transfer(url2t):
 
 def main():
     for key, value in test_dict.items():
-        # if key != 2:
+        # if key != 10:
         #     continue
         for url in value:
             links = transfer(url)

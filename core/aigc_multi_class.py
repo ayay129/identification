@@ -19,7 +19,7 @@ from docx import Document
 from config import baidu_client
 from openpyxl import load_workbook
 from xlrd import open_workbook
-from core.exception import InterfaceError
+from server.bodys import InterfaceError
 from pptx import Presentation
 
 

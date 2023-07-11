@@ -4,16 +4,18 @@
 # @Author: Rangers
 # @Site: 
 # @File: identification.py
+import base64
 import io
 import json
-from config import baidu_client, baidu_image_client
+from config import baidu_client, baidu_image_client, baidu_face_client
 import requests
 from pdf2image import convert_from_bytes
 from PIL import Image
 from docx import Document
 from urllib.parse import urlparse
 import platform
-from core.exception import RespType, InterfaceError
+from core.const import RespType
+from server.bodys import InterfaceError
 from core.const import degree_header, birth_cert_header, passport_header, hk_macau_header
 
 
@@ -414,8 +416,11 @@ def parse_degree_report_type(long_strings, degree_type=0):
 
 
 # 图片纠正
-def doc_crop_enhance(image_bytes):
-    resp = baidu_client.doc_crop_enhance(image_bytes)
+def doc_crop_enhance(image_bytes, option=None):
+    if not option:
+        resp = baidu_client.doc_crop_enhance(image_bytes)
+    else:
+        resp = baidu_client.doc_crop_enhance(image_bytes, options=option)
     if resp.get("error_code"):
         return InterfaceError(code=resp.get("error_code"), message=resp.get("error_msg"))
     image_b64 = resp.get("image_processed")
@@ -424,17 +429,55 @@ def doc_crop_enhance(image_bytes):
     del resp["log_id"]
     return resp
 
-# if __name__ == '__main__':
-#     with open("../data/dismantle/1687184654498.docx","rb") as f:
-#         document = Document(f)
-#     for paragraph in document.paragraphs:
-#         print(paragraph.text)
-#     with open("../data/id_card/bcard.jpg", "rb") as f:
-#         image = f.read()
-#     doc_crop_enhance(image)
-#     # resp = baidu_image_client.imageDefinitionEnhance(image)
-#     resp = baidu_image_client.contrastEnhance(image)
-#     b64image = resp["image"]
-#     images = base64.b64decode(b64image)
-#     images = image_procedure(images)
-#     resp = deal_HkMcau_permit(images)
+
+# 处理结婚证
+def deal_marriage_cert(data):
+    response_data = {}
+    resp = baidu_client.marriage_certificate(image=data)
+    word_result = resp.get("words_result")
+    if not word_result:
+        return None
+    if resp.get("error_code"):
+        return InterfaceError(code=resp.get("error_code"), message=resp.get("error_msg"))
+    try:
+        response_data["husband_name"] = word_result["姓名_男"][0]["word"]
+        response_data["husband_id_card"] = word_result["身份证件号_男"][0]["word"]
+        response_data["husband_birth"] = word_result["出生日期_男"][0]["word"]
+        response_data["husband_nationality"] = word_result["国籍_男"][0]["word"]
+        response_data["wife_name"] = word_result["姓名_女"][0]["word"]
+        response_data["wife_id_card"] = word_result["身份证件号_女"][0]["word"]
+        response_data["wife_birth"] = word_result["出生日期_女"][0]["word"]
+        response_data["wife_nationality"] = word_result["国籍_女"][0]["word"]
+        response_data["marriage_certificate_number"] = word_result["结婚证字号"][0]["word"]
+        response_data["holder_of_certificate"] = word_result["持证人"][0]["word"]
+    except Exception as err:
+        return InterfaceError(code=-1, message="")
+    return response_data
+
+
+# 人脸相似度对比
+def face_compare(id_card_bytes, recent_bytes):
+    image1 = {
+        "image": base64.b64encode(id_card_bytes).decode(),
+        "image_type": "BASE64"
+    }
+    image2 = {
+        "image": base64.b64encode(recent_bytes).decode(),
+        "image_type": "BASE64"
+    }
+    resp = baidu_face_client.match([image1, image2])
+    if resp["error_code"] != 0:
+        return InterfaceError(code=resp.get("error_code"), msg=resp.get("error_msg"))
+    return resp
+
+
+if __name__ == '__main__':
+    # with open("../data/近期证件照/反面（配偶）（贺之讯）_2.jpg", "rb") as f:
+    #     id_image_bytes = f.read()
+    # with open("../data/近期证件照/近期证件照片（贺之讯）.jpg", "rb") as f:
+    #     recent_image_bytes = f.read()
+    # face_compare(id_image_bytes, recent_image_bytes)
+    with open("../data/结婚证/结婚证（只需信息页）（张菲菲）_1.JPG","rb") as f:
+        image = f.read()
+    image_bytes = image_procedure(image)
+    deal_marriage_cert(image_bytes)

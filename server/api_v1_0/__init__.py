@@ -4,3 +4,5 @@
 # @Author: Rangers
 # @Site: 
 # @File: __init__.py.py
+from fastapi import FastAPI
+app = FastAPI()

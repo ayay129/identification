@@ -6,7 +6,8 @@
 # @File: main.py
 
 import uvicorn
-from server.api_v1_0.server import app
+from server.api_v1_0 import app
+from server.api_v1_0 import face_server,ocr_server
 
 if __name__ == '__main__':
     uvicorn.run("main:app", host="0.0.0.0", port=52520, reload=True)
