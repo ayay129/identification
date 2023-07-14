@@ -9,7 +9,7 @@ from server.api_v1_0 import app
 from server.bodys import PostData, CardResponse, UrlData, BaseResponse, InterfaceError
 from core.const import RETCODE, RespType, err_msg, ReqType
 from core.identification import deal_passport, deal_id_card, deal_HkMcau_permit, deal_birth_cert, change_format, \
-    deal_degree_report, doc_crop_enhance, deal_marriage_cert
+    deal_degree_report, doc_crop_enhance, deal_marriage_cert, deal_graduation_and_degree_cert
 from core.aigc_multi_class import distribute_file_class
 
 
@@ -119,7 +119,7 @@ async def identity(request: PostData):
         # 正常
         return CardResponse(code=RETCODE.OK, type=RespType.DegreeCertReport, message=err_msg[RETCODE.OK],
                             data=response_data)
-    # 结婚证
+    # 结婚证 10
     elif request.input_type == ReqType.Marriage:
         try:
             response_data = deal_marriage_cert(image_bytes)
@@ -128,6 +128,22 @@ async def identity(request: PostData):
         if isinstance(response_data, InterfaceError):
             return response_data
         return CardResponse(code=RETCODE.OK, type=RespType.Marriage, message=err_msg[RETCODE.OK],
+                            data=response_data)
+    # 毕业证 11
+    elif request.input_type == ReqType.GraduationCert:
+        try:
+            response_data = deal_graduation_and_degree_cert(image_bytes)
+        except Exception as err:
+            return InterfaceError(code=RETCODE.ERROR, message="{}->{}".format(err_msg[RETCODE.ERROR], err))
+        return CardResponse(code=RETCODE.OK, type=RespType.GraduationCert, message=err_msg[RETCODE.OK],
+                            data=response_data)
+    # 学位证 12
+    elif request.input_type == ReqType.DegreeCert:
+        try:
+            response_data = deal_graduation_and_degree_cert(image_bytes)
+        except Exception as err:
+            return InterfaceError(code=RETCODE.ERROR, message="{}->{}".format(err_msg[RETCODE.ERROR], err))
+        return CardResponse(code=RETCODE.OK, type=RespType.DegreeCert, message=err_msg[RETCODE.OK],
                             data=response_data)
     # 非范围内
     else:

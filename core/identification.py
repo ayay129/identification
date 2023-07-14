@@ -6,7 +6,8 @@
 # @File: identification.py
 import base64
 import io
-import json
+import re
+import os
 from config import baidu_client, baidu_image_client, baidu_face_client
 import requests
 from pdf2image import convert_from_bytes
@@ -17,6 +18,7 @@ import platform
 from core.const import RespType
 from server.bodys import InterfaceError
 from core.const import degree_header, birth_cert_header, passport_header, hk_macau_header
+import jieba
 
 
 # pdf转图片
@@ -38,16 +40,28 @@ def pdf_to_image_stream(image_bytes, page=1):
     for image in images:
         concatenated_image.paste(image, (0, y_offset))
         y_offset += image.height
-    # 调整大小
-    # target_height = 800
-    # target_width = 600
-    # resize_image = concatenated_image.resize((target_width, target_height), resample=Image.LANCZOS)
     stream = io.BytesIO()
-    # resize_image.save(stream, format="PNG", quality=90)
     concatenated_image.save(stream, format="PNG", quality=90)
     image_stream = stream.getvalue()
     image_stream = image_procedure(image_bytes=image_stream)
     return image_stream
+
+
+def pdf2_to_image_stream(image_bytes, page=2):
+    if platform.system().lower() == "windows":
+        images = convert_from_bytes(image_bytes, poppler_path="D:\\Program Files (x86)\\poppler-23.05.0\\Library\\bin")
+    else:
+        images = convert_from_bytes(image_bytes)
+    images = images[:page]
+    images_data = []
+    for index, image in enumerate(images):
+        # 调整大小
+        stream = io.BytesIO()
+        image.save(stream, format="PNG", quality=90)
+        image_stream = stream.getvalue()
+        image_stream = image_procedure(image_bytes=image_stream)
+        images_data.append(image_stream)
+    return images_data
 
 
 # 文件格式转换逻辑
@@ -471,13 +485,101 @@ def face_compare(id_card_bytes, recent_bytes):
     return resp
 
 
-if __name__ == '__main__':
-    # with open("../data/近期证件照/反面（配偶）（贺之讯）_2.jpg", "rb") as f:
-    #     id_image_bytes = f.read()
-    # with open("../data/近期证件照/近期证件照片（贺之讯）.jpg", "rb") as f:
-    #     recent_image_bytes = f.read()
-    # face_compare(id_image_bytes, recent_image_bytes)
-    with open("../data/结婚证/结婚证（只需信息页）（张菲菲）_1.JPG","rb") as f:
-        image = f.read()
-    image_bytes = image_procedure(image)
-    deal_marriage_cert(image_bytes)
+def deal_graduation_and_degree_cert(image_bytes, depth=0):
+    if depth >= 4:
+        return RecursionError("90度旋转{}次均无法识别证件内容".format(depth))
+    response_data = {}
+    resp = baidu_client.accurate(image_bytes)
+    words_result = resp.get("words_result")
+    long_strings = [words["words"] for words in words_result]
+    long_string = "|".join(long_strings)
+    if re.findall(r"毕业证书", long_string):
+        name_list = [r"学生\|([\u4e00-\u9fa5]+?)\|", r"学生([\u4e00-\u9fa5]+?)\|", r"\|([\u4e00-\u9fa5]{2,4})\|性别"]
+        level_list = [r"(本科)|(硕士)|(博士)", r"(本\|科)|(硕\|士)|(博\|士)"]
+        college_list = [r"校名[:：\s](.*大学)", r"[校\|名]+[:：\s](.*大学)", r"校名[:：\s](.*大學)",
+                        r"校\|名[:：\s](.*大學)",
+                        r".*\|(.*大學)\|"]
+    elif re.findall(r"学位证书", long_string):
+        # '王迪辛|,男，|一九七六|年十二月生。自|一九九四|年九月至一九九九年六月|在|浙江大学|信息与电子工程系|信息电子技术|完成了*年制本科学习计划，业已毕业。|经审核符合《中华人民共和国学位条例》|的规定，授予|ヱ|学学士学位。|学士学位证书|浙江大学|学位评定委员会主席|(普通高等教育本科毕业生)|潘鹤|1999年6月25日|证书编号：103314991197'
+        name_list = [r"([\u4e00-\u9fa5]{2,5})[\|]*[，,]*[男女系][，,]*.*?\|", r"([\u4e00-\u9fa5]{2,4})[男女]"]
+        level_list = [r"(学士)|(硕士)|(博士)", r"(学\|士)|(硕\|士)|(博\|士)"]
+        college_list = [r"在*([\u4e00-\u9fa5]{2,6}大学)"]
+    else:
+        rotate_image_bytes = image_rotate(image_bytes)
+        return deal_graduation_and_degree_cert(rotate_image_bytes, depth=depth + 1)
+    student = match(name_list, long_string)
+    if student:
+        response_data["student"] = re.sub(r"\|+", "", student[0])
+    level = match(level_list, long_string)
+    if level:
+        for obj in level[0]:
+            if obj:
+                response_data["education_level"] = re.sub(r"\|+", "", obj)
+    college = match(college_list, long_string)
+    if college:
+        response_data["school"] = re.sub(r"\|+", "", college[0])
+    if not response_data:
+        rotate_image_bytes = image_rotate(image_bytes)
+        return deal_graduation_and_degree_cert(rotate_image_bytes, depth=depth + 1)
+    else:
+        return response_data
+
+
+def match(re_list, string):
+    for re_match in re_list:
+        resp = re.findall(re_match, string)
+        if not resp:
+            continue
+        return resp
+    else:
+        return None
+
+
+def image_rotate(image_bytes):
+    image = Image.open(io.BytesIO(image_bytes))
+    rotated_image = image.rotate(90, expand=True)
+    output_binary = io.BytesIO()
+    rotated_image.save(output_binary, format='PNG')
+    output_binary.seek(0)
+
+    # 从二进制流读取旋转后的图像数据
+    rotated_image_binary = output_binary.read()
+    return rotated_image_binary
+
+# if __name__ == '__main__':
+# 毕业证测试
+# with open("../data/毕业证/本科毕业证（配偶）.png", "rb") as f:
+# with open("../data/毕业证/本科毕业证（配偶）_2.jpg", "rb") as f:
+# with open("../data/毕业证/黑龙江大学本科毕业证.jpg", "rb") as f:
+# with open("../data/毕业证/西安外国语大学本科毕业证.jpeg", "rb") as f:
+# with open("../data/毕业证/本科毕业证（配偶）（郭新峰）.jpg", "rb") as f:
+# with open("../data/毕业证/1689219407935.jpg", "rb") as f:
+#     data = f.read()
+# image_bytes = image_procedure(image_bytes=data)
+# deal_graduation_and_degree_cert(image_bytes)
+
+# with open("../data/毕业证/本科毕业证+学位证（王迪辛）.pdf", "rb") as f:
+# with open("../data/毕业证/西安交通大学本科毕业证.pdf", "rb") as f:
+# with open("../data/毕业证/硕士毕业证（配偶）（李蓉）.pdf", "rb") as f:
+#     # with open("../data/毕业证/本科毕业证+学位证（配偶从岩）.pdf", "rb") as f:
+#     data = f.read()
+# image_list = pdf2_to_image_stream(data, page=1)
+# resp = deal_graduation_and_degree_cert(image_list[0])
+# print(resp)
+# 学位证测试
+# 毕业证测试
+# for root, dirs, files in os.walk("../data/学位证"):
+#     for name in files:
+#         file_name = "%s/%s" % (root, name)
+#         print(file_name)
+#         with open(file_name, "rb") as f:
+#             image = f.read()
+#         if file_name.lower().endswith((".png", ".jpg", ".jpeg", ".bmp")):
+#             # 图片->转换大小
+#             images = image_procedure(image)
+#         elif file_name.lower().endswith(".pdf"):
+#             # pdf，转图片
+#             images = pdf2_to_image_stream(image, page=1)
+#         image = images[0] if isinstance(images, list) else images
+#         resp = deal_graduation_and_degree_cert(image)
+#         print(resp)

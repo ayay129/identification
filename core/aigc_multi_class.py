@@ -110,9 +110,9 @@ def xlsx2content(data_bytes):
             lattice = ws.cell(row=row_index, column=col_index)
             if not lattice.value:
                 continue
-            elif not lattice.value.strip():
+            elif not str(lattice.value).strip():
                 continue
-            data.append(lattice.value.strip())
+            data.append(str(lattice.value).strip())
     result_str = "\n".join(data)
     return result_str
 
@@ -227,15 +227,20 @@ def test():
     # if resp.status_code != 200:
     #     return
     # data = judge_file_class(url, data_bytes=resp.content)
-    for root, dirs, files in os.walk("../data/dismantle"):
-        for name in files:
-            file_name = "{}/{}".format(root, name)
-            print(file_name)
-            with open(file_name, "rb") as f:
-                data_bytes = f.read()
-                data = judge_url_class(file_name, data_bytes)
-            print(data)
-            print("-" * 100)
+    # for root, dirs, files in os.walk("../data/dismantle"):
+    #     for name in files:
+    #         file_name = "{}/{}".format(root, name)
+    #         print(file_name)
+    #         with open(file_name, "rb") as f:
+    #             data_bytes = f.read()
+    #             data = judge_url_class(file_name, data_bytes)
+    #         print(data)
+    #         print("-" * 100)
+    file_name ="../data/dismantle/附件A (1).pdf"
+    with open(file_name,"rb") as f:
+        data_bytes = f.read()
+    data = judge_url_class(file_name,data_bytes)
+    print(data)
 
 
 def distribute_file_class(url):
@@ -246,5 +251,5 @@ def distribute_file_class(url):
     return data
 
 
-# if __name__ == '__main__':
-#     test()
+if __name__ == '__main__':
+    test()

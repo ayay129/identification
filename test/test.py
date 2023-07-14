@@ -1,47 +1,19 @@
 #! /usr/bin/python3
 # -*- coding:utf-8 -*-
-# @Time: 2023-07-10 15:13
+# @Time: 2023-07-14 10:54
 # @Author: Rangers
 # @Site: 
 # @File: test.py
 
+import nltk
 
-import cv2
-import numpy as np
-
-def correct_skew(image_path):
-    # 读取图像
-    image = cv2.imread(image_path)
-
-    # 将图像转换为灰度
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-    # 对图像进行边缘检测
-    edges = cv2.Canny(gray, 50, 150, apertureSize=3)
-
-    # 检测图像中的直线
-    lines = cv2.HoughLines(edges, 1, np.pi / 180, threshold=100)
-
-    # 计算直线的平均角度
-    angles = []
-    for line in lines:
-        for rho, theta in line:
-            angles.append(theta)
-    mean_angle = np.mean(angles)
-
-    # 计算旋转角度
-    rotation_angle = np.degrees(mean_angle) - 90
-
-    # 对图像进行旋转纠正
-    rows, cols = image.shape[:2]
-    rotation_matrix = cv2.getRotationMatrix2D((cols / 2, rows / 2), rotation_angle, 1)
-    corrected_image = cv2.warpAffine(image, rotation_matrix, (cols, rows))
-
-    return corrected_image
-
-# 调用纠正函数并显示结果
-image_path = '../data/id_card/反面（周伊皓）_1.jpg'
-corrected_image = correct_skew(image_path)
-cv2.imshow('Corrected Image', corrected_image)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+text = "她和张明在一起。"  # 一段包含人名的文字
+words = nltk.word_tokenize(text)  # 将文字分解成单词
+tagged = nltk.pos_tag(words)  # 获取每个单词的词性
+named_entities = nltk.ne_chunk(tagged, binary=True)  # 提取出人名
+people = set()
+for chunk in named_entities:
+    if hasattr(chunk, 'label') and chunk.label() == 'NE':  # 如果chunk有标签并且标签是'NE'
+        person = ' '.join(c[0] for c in chunk.leaves())
+        people.add(person)
+        print(people)
