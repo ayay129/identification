@@ -8,7 +8,7 @@
 from server.api_v1_0 import app
 from server.bodys import PostData, CardResponse, UrlData, BaseResponse, InterfaceError
 from core.const import RETCODE, RespType, err_msg, ReqType
-from core.identification import function_map, change_format
+from core.identification import function_map, change_format,doc_crop_enhance
 from core.aigc_multi_class import distribute_file_class
 
 
