@@ -20,7 +20,8 @@ birth_cert_header = ["newborn", "gender", "birth", "motherName", "motherNum", "f
 passport_header = ["name", "pinyin", "birth", "birthLocation", "issueLocation", "issueDate", "valid", "gender",
                    "countryCode", "MRZCode2", "issuingAuthority", "MRZCode1", "cardNum", "nationality"]
 
-hk_macau_header = ["name", "pinyin", "birth", "gender", "termBegins", "endOfTerm", "issueLocation", "cardNum"]
+hk_macau_header = ["name", "pinyin", "birth", "gender", "termBegins", "endOfTerm", "issueLocation", "cardNum",
+                   "is_full"]
 
 
 class RETCODE:

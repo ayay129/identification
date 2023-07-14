@@ -8,8 +8,7 @@
 from server.api_v1_0 import app
 from server.bodys import PostData, CardResponse, UrlData, BaseResponse, InterfaceError
 from core.const import RETCODE, RespType, err_msg, ReqType
-from core.identification import deal_passport, deal_id_card, deal_HkMcau_permit, deal_birth_cert, change_format, \
-    deal_degree_report, doc_crop_enhance, deal_marriage_cert, deal_graduation_and_degree_cert
+from core.identification import function_map, change_format
 from core.aigc_multi_class import distribute_file_class
 
 
@@ -22,13 +21,17 @@ async def identity(request: PostData):
     :param request: input_type，指定证件类型; .url 指定可访问的证件url地址
     :return:
     """
-    image_bytes = change_format(url=request.url)
-    if not image_bytes:
+    image_data = change_format(url=request.url)
+    if not image_data:
         return InterfaceError(code=RETCODE.CHANGE_FORMAT_ERROR, message=err_msg[RETCODE.CHANGE_FORMAT_ERROR])
+    if isinstance(image_data, list):
+        image_bytes = image_data[0]
+    else:
+        image_bytes = image_data
     # 1.身份证
     if request.input_type == ReqType.IdentityCard:
         try:
-            response_data = deal_id_card(image_bytes)
+            response_data = function_map[ReqType.IdentityCard](image_data)
         except Exception as err:
             # 识别异常
             return InterfaceError(code=RETCODE.ERROR, message="{}->{}".format(err_msg[RETCODE.ERROR], err))
@@ -50,7 +53,7 @@ async def identity(request: PostData):
     # 2.出生证
     elif request.input_type == ReqType.BirthCert:
         try:
-            response_data = deal_birth_cert(image_bytes)
+            response_data = function_map[ReqType.BirthCert](image_bytes)
         except Exception as err:
             # 识别异常
             return InterfaceError(code=RETCODE.ERROR, message="{}->{}".format(err_msg[RETCODE.ERROR], err))
@@ -64,7 +67,7 @@ async def identity(request: PostData):
     # 3.护照
     elif request.input_type == ReqType.PassPort:
         try:
-            response_data = deal_passport(image_bytes)
+            response_data = function_map[ReqType.PassPort](image_bytes)
         except Exception as err:
             # 识别异常
             return InterfaceError(code=RETCODE.ERROR, message="{}->{}".format(err_msg[RETCODE.ERROR], err))
@@ -79,7 +82,7 @@ async def identity(request: PostData):
     elif request.input_type == ReqType.HkMacaoPermit:
         # 转二进制
         try:
-            response_data = deal_HkMcau_permit(image_bytes)
+            response_data = function_map[ReqType.HkMacaoPermit](image_bytes)
         except Exception as err:
             # 识别异常
             return InterfaceError(code=RETCODE.ERROR, message="{}->{}".format(err_msg[RETCODE.ERROR], err))
@@ -107,7 +110,7 @@ async def identity(request: PostData):
     # 5. 学位证 type 5
     elif request.input_type == ReqType.DegreeCertReport:
         try:
-            response_data = deal_degree_report(image_bytes)
+            response_data = function_map[ReqType.DegreeCertReport](image_bytes)
         except Exception as err:
             return InterfaceError(code=RETCODE.ERROR, message="{}->{}".format(err_msg[RETCODE.ERROR], err))
         # 异常
@@ -122,7 +125,7 @@ async def identity(request: PostData):
     # 结婚证 10
     elif request.input_type == ReqType.Marriage:
         try:
-            response_data = deal_marriage_cert(image_bytes)
+            response_data = function_map[ReqType.Marriage](image_bytes)
         except Exception as err:
             return InterfaceError(code=RETCODE.ERROR, message="{}->{}".format(err_msg[RETCODE.ERROR], err))
         if isinstance(response_data, InterfaceError):
@@ -132,7 +135,7 @@ async def identity(request: PostData):
     # 毕业证 11
     elif request.input_type == ReqType.GraduationCert:
         try:
-            response_data = deal_graduation_and_degree_cert(image_bytes)
+            response_data = function_map[ReqType.GraduationCert](image_bytes)
         except Exception as err:
             return InterfaceError(code=RETCODE.ERROR, message="{}->{}".format(err_msg[RETCODE.ERROR], err))
         return CardResponse(code=RETCODE.OK, type=RespType.GraduationCert, message=err_msg[RETCODE.OK],
@@ -140,7 +143,7 @@ async def identity(request: PostData):
     # 学位证 12
     elif request.input_type == ReqType.DegreeCert:
         try:
-            response_data = deal_graduation_and_degree_cert(image_bytes)
+            response_data = function_map[ReqType.GraduationCert](image_bytes)
         except Exception as err:
             return InterfaceError(code=RETCODE.ERROR, message="{}->{}".format(err_msg[RETCODE.ERROR], err))
         return CardResponse(code=RETCODE.OK, type=RespType.DegreeCert, message=err_msg[RETCODE.OK],

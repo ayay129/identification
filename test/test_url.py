@@ -9,15 +9,16 @@ import requests
 
 # 身份证
 id_urls = [
-    # "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1685621038948.pdf",   # 正反两页
-    # "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1685624368732.jpg",   # 正面
-    # "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1689064162085.jpg",
-    "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1689236998244.png"  # 混贴
+    "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1685621038948.pdf",   # 正反两页
+    "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1685624368732.jpg",   # 正面
+    "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1689064162085.jpg",
+    # "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1689236998244.png"  # 混贴
 ]
 # #
 # 港澳通行证
 hk_urls = [
     "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1689232260827.pdf", # 正反两页
+    "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1689232644168.jpg"
 ]
 #
 # 出生证
@@ -44,7 +45,7 @@ degree_urls = [
 ]
 
 marriage_urls = [
-    # "https://upload.cdn.galaxy-immi.com/crm/test/files/168897785083018018.png",
+    "https://upload.cdn.galaxy-immi.com/crm/test/files/168897785083018018.png",
     "https://upload.cdn.galaxy-immi.com/crm/test/files/10368/1689040846177.jpg"
 ]
 # 学位证
@@ -93,6 +94,8 @@ def transfer(url2t):
 
 def main():
     for key, value in test_dict.items():
+        # if key !=1:
+        #     continue
         print(">>>{}".format(key))
         for url in value:
             links = transfer(url)

@@ -7,7 +7,6 @@
 import base64
 import io
 import re
-import os
 from config import baidu_client, baidu_image_client, baidu_face_client
 import requests
 from pdf2image import convert_from_bytes
@@ -15,10 +14,9 @@ from PIL import Image
 from docx import Document
 from urllib.parse import urlparse
 import platform
-from core.const import RespType
+from core.const import RespType, ReqType
 from server.bodys import InterfaceError
 from core.const import degree_header, birth_cert_header, passport_header, hk_macau_header
-import jieba
 
 
 # pdf转图片
@@ -76,7 +74,7 @@ def change_format(url):
         image = image_procedure(image_bytes)
     elif url_path.lower().endswith(".pdf"):
         # pdf，转图片
-        image = pdf_to_image_stream(image_bytes)
+        image = pdf2_to_image_stream(image_bytes)
     elif url_path.lower().endswith(".doc"):
         # word，转图片
         image = word_to_image(image_bytes)
@@ -135,41 +133,40 @@ def read_doc(url):
 
 
 # 身份证
-def deal_id_card(data, image=True):
+def deal_id_card(data):
     response_data = {}
-    if image:
-        resp = baidu_client.multi_idcard(image=data, options={"detect_risk": "true", "detect_quality": "true",
-                                                              "detect_direction": "true"})
-    else:
-        resp = baidu_client.multi_idcardUrl(url=data, options={"detect_risk": "true", "detect_quality": "true",
-                                                               "detect_direction": "true"})
-    # 直接返回内部错误
-    if resp.get("error_code"):
-        return InterfaceError(code=resp.get("error_code"), message=resp.get("error_msg"))
-    results = resp["words_result"]
-    if not results:
-        return None
-    for result in results:
-        status = result["card_info"]["image_status"]
-        # if status not in ["normal", "reverse_side","unknown"]:
-        if status in ["other_type_card"]:
-            # return CardResponse(code=1, type=0, message="Recognize Failure. Cause {}".format(status))
+    if not isinstance(data, list):
+        data = [data]
+    for image_bytes in data:
+        resp = baidu_client.multi_idcard(image=image_bytes, options={"detect_risk": "true", "detect_quality": "true",
+                                                                  "detect_direction": "true"})
+        # 直接返回内部错误
+        if resp.get("error_code"):
+            return InterfaceError(code=resp.get("error_code"), message=resp.get("error_msg"))
+        results = resp["words_result"]
+        if not results:
             return None
-        card_type = result["card_info"]["card_type"]
-        card_result = result["card_result"]
-        if card_type == "idcard_front":
-            # 正面
-            response_data["name"] = card_result["姓名"]["words"]
-            response_data["gender"] = card_result["性别"]["words"]
-            response_data["nationality"] = card_result["民族"]["words"]
-            response_data["birth"] = card_result["出生"]["words"]
-            response_data["address"] = card_result["住址"]["words"]
-            response_data["cardNum"] = card_result["公民身份号码"]["words"]
-        else:
-            # 反面
-            response_data["issuingAuthority"] = card_result["签发机关"]["words"]
-            response_data["termBegins"] = card_result["签发日期"]["words"]
-            response_data["endOfTerm"] = card_result["失效日期"]["words"]
+        for result in results:
+            status = result["card_info"]["image_status"]
+            # if status not in ["normal", "reverse_side","unknown"]:
+            if status in ["other_type_card"]:
+                # return CardResponse(code=1, type=0, message="Recognize Failure. Cause {}".format(status))
+                return None
+            card_type = result["card_info"]["card_type"]
+            card_result = result["card_result"]
+            if card_type == "idcard_front":
+                # 正面
+                response_data["name"] = card_result["姓名"]["words"]
+                response_data["gender"] = card_result["性别"]["words"]
+                response_data["nationality"] = card_result["民族"]["words"]
+                response_data["birth"] = card_result["出生"]["words"]
+                response_data["address"] = card_result["住址"]["words"]
+                response_data["cardNum"] = card_result["公民身份号码"]["words"]
+            else:
+                # 反面
+                response_data["issuingAuthority"] = card_result["签发机关"]["words"]
+                response_data["termBegins"] = card_result["签发日期"]["words"]
+                response_data["endOfTerm"] = card_result["失效日期"]["words"]
     return response_data
 
 
@@ -546,6 +543,17 @@ def image_rotate(image_bytes):
     rotated_image_binary = output_binary.read()
     return rotated_image_binary
 
+
+function_map = {
+    ReqType.IdentityCard: deal_id_card,
+    ReqType.BirthCert: deal_birth_cert,
+    ReqType.PassPort: deal_passport,
+    ReqType.HkMacaoPermit: deal_HkMcau_permit,
+    ReqType.DegreeCertReport: deal_degree_report,
+    ReqType.Marriage: deal_marriage_cert,
+    ReqType.GraduationCert: deal_graduation_and_degree_cert,
+    ReqType.DegreeCert: deal_graduation_and_degree_cert
+}
 # if __name__ == '__main__':
 # 毕业证测试
 # with open("../data/毕业证/本科毕业证（配偶）.png", "rb") as f:
