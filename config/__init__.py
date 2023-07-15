@@ -12,7 +12,6 @@ import os
 from fastapi.logger import logger
 
 
-
 class DefineOcr(AipOcr):
     __marriage_certificate = "https://aip.baidubce.com/rest/2.0/ocr/v1/marriage_certificate"
 
@@ -27,16 +26,13 @@ class DefineOcr(AipOcr):
 yaml_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "config")
 # 初始化配置
 connect_cfg = YamlParser(config=os.path.join(yaml_dir, "api.yaml")).json
-
+straw_api = connect_cfg.get("straw_api")
 baidu_ocr_env = connect_cfg.get("baidu_ocr")
 
-# baidu_client = AipOcr(str(baidu_ocr_env["app_id"]), str(baidu_ocr_env["api_key"]), str(baidu_ocr_env["secret_key"]))
 baidu_client = DefineOcr(str(baidu_ocr_env["app_id"]), str(baidu_ocr_env["api_key"]), str(baidu_ocr_env["secret_key"]))
 baidu_image_client = AipImageProcess(str(baidu_ocr_env["app_id"]), str(baidu_ocr_env["api_key"]),
                                      str(baidu_ocr_env["secret_key"]))
 
 baidu_face_client = AipFace(str(baidu_ocr_env["app_id"]), str(baidu_ocr_env["api_key"]),
                             str(baidu_ocr_env["secret_key"]))
-# logging.config.fileConfig(os.path.join(yaml_dir, 'logging.conf'))
-# logger = logging.getLogger("fast-api")
 

@@ -12,6 +12,11 @@ class UrlData(BaseModel):
     url: str | list
 
 
+class MergeData(BaseModel):
+    urls: list
+    input_type: int
+
+
 class PostData(UrlData):
     input_type: int
 

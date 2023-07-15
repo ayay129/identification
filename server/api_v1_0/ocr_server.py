@@ -6,9 +6,9 @@
 # @File: ocr_server.py
 
 from server.api_v1_0 import app
-from server.bodys import PostData, CardResponse, UrlData, BaseResponse, InterfaceError
+from server.bodys import PostData, CardResponse, UrlData, BaseResponse, InterfaceError, MergeData
 from core.const import RETCODE, RespType, err_msg, ReqType
-from core.identification import function_map, change_format, doc_crop_enhance, merge_images
+from core.identification import function_map, change_format, doc_crop_enhance, merge_images, image_cutout
 from core.aigc_multi_class import distribute_file_class
 
 
@@ -185,15 +185,28 @@ async def identify(request: UrlData):
 
 
 @app.post("/image/merge")
-async def function(request: UrlData):
-    if not isinstance(request.url, list) or len(request.url) < 2:
+async def function(request: MergeData):
+    if not isinstance(request.urls, list) or len(request.urls) < 2:
         return InterfaceError(code=RETCODE.ERROR, message=err_msg[RETCODE.ERROR] + "params error")
     image_list = []
-    for url in request.url:
+    for url in request.urls:
         image_bytes = change_format(url)
         image_list.append(image_bytes)
     try:
-        response_data = merge_images(image_list)
+        response_data = merge_images(image_list, input_type=request.input_type)
     except Exception as err:
         return InterfaceError(code=RETCODE.ERROR, message="{}->{}".format(err_msg[RETCODE.ERROR], err))
     return BaseResponse(code=RETCODE.OK, message=err_msg[RETCODE.OK], data={"image_b64": response_data})
+
+
+@app.post("/image/white")
+async def function(request: UrlData):
+    image_bytes = change_format(request.url)
+    try:
+        response_data = image_cutout(image_bytes)
+    except Exception as err:
+        return InterfaceError(code=RETCODE.ERROR, message="{}->{}".format(err_msg[RETCODE.ERROR], err))
+    return BaseResponse(code=RETCODE.OK, message=err_msg[RETCODE.OK], data={"image_b64": response_data})
+
+
+

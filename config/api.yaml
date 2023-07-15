@@ -5,3 +5,7 @@ baidu_ocr:
   app_id: 35971113
   api_key: be7BzHqyoYE99DLv2hGQe16p
   secret_key: LSR5xLRcekY6j0S5xZoIAcNVLq7GKAav
+straw_api:
+  app_id: VIICXM402379
+  api_key: A8319C0745A7A4D06B6FD5C446E8E8A6
+  secret_key: 3E49E036C0CA7DB2AD66AAD8B497BED2

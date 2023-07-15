@@ -8,6 +8,7 @@ import base64
 import io
 import re
 from config import baidu_client, baidu_image_client, baidu_face_client
+from rembg import remove
 import requests
 from pdf2image import convert_from_bytes
 from PIL import Image
@@ -532,9 +533,9 @@ def match(re_list, string):
         return None
 
 
-def image_rotate(image_bytes):
+def image_rotate(image_bytes, angle=90):
     image = Image.open(io.BytesIO(image_bytes))
-    rotated_image = image.rotate(90, expand=True)
+    rotated_image = image.rotate(angle, expand=True)
     output_binary = io.BytesIO()
     rotated_image.save(output_binary, format='PNG')
     output_binary.seek(0)
@@ -545,9 +546,23 @@ def image_rotate(image_bytes):
 
 
 # 图片合成
-def merge_images(images_list: list, num=2):
-    # 将二进制流转换为PIL图片对象
-    images = [Image.open(io.BytesIO(image)).convert("RGBA") for image in images_list[:num]]
+def merge_images(images_list: list, num=2, input_type=1):
+    images = []
+    for image in images_list[:num]:
+        # 存在透明
+        output_binary = remove(image)
+        # 处理后为RGBA
+        output_binary = remove_transparent_pixels(output_binary)
+        # if input_type == 1:
+        #     resp = baidu_client.multi_idcard(image=output_binary,
+        #                                      options={"detect_risk": "true", "detect_quality": "true",
+        #                                               "detect_direction": "true"})
+        #     direction = resp["words_result"][0]["card_info"]["direction"]
+        #     image_binary = rotate_id_card(output_binary, direction)
+        # else:
+        #     image_binary = output_binary
+        # images.append(Image.open(io.BytesIO(image_binary)).convert("RGBA"))
+        images.append(Image.open(io.BytesIO(output_binary)))
 
     # 创建一个新的白底图像，尺寸为两张输入图片的最大宽度和最大高度
     total_height = int(sum(image.height for image in images) * 1.2)
@@ -559,30 +574,73 @@ def merge_images(images_list: list, num=2):
         x_offset = int((max_width - image.width) / 2)
         concatenated_image.paste(image, (x_offset, y_offset))
         y_offset += int(image.height + total_height * 0.05)
+    # 转换为RGB
     stream = io.BytesIO()
     concatenated_image.save(stream, format="PNG", quality=90)
     image_stream = stream.getvalue()
     return base64.b64encode(image_stream)
 
 
-def tailor(image_bytes):
-    resp = doc_crop_enhance(image_bytes)
-    points = resp.get("points")
-    x_set = []
-    y_set = []
-    for point in points:
-        x_set.append(point["x"])
-        y_set.append(point["y"])
-    min_x = min(x_set)
-    min_y = min(y_set)
-    width = max(x_set) - min(x_set)
-    height = max(y_set) - min(y_set)
+def rotate_id_card(image_bytes, direction=-1):
+    if direction == 3:
+        image_binary = image_rotate(image_bytes, angle=90)
+    elif direction == 2:
+        image_binary = image_rotate(image_bytes, angle=180)
+    elif direction == 1:
+        image_binary = image_rotate(image_bytes, angle=270)
+    else:
+        image_binary = image_bytes
+    return image_binary
+
+
+# 去除透明像素
+def remove_transparent_pixels(image_bytes):
+    # 将二进制流转换为PIL图片对象
     image = Image.open(io.BytesIO(image_bytes))
-    cropped_image = image.crop((min_y, min_x, min_y + height, min_x + width))
-    stream = io.BytesIO()
-    cropped_image.save(stream, format="PNG", quality=90)
-    image_bytes = stream.getvalue()
-    return image_bytes
+
+    # 检查图像是否具有透明通道
+    # if image.mode == 'RGBA':
+    # 将图像转换为带有预乘透明度的RGBA模式
+    image = image.convert("RGBA")
+
+    # 获取图像中每个像素的RGBA值
+    pixels = image.getdata()
+
+    # 创建一个新的图像对象，用于存储去除透明像素后的图像
+    new_image = Image.new("RGBA", image.size, "white")
+
+    x_set, y_set = [], []
+    # 遍历图像的每个像素
+    for i, pixel in enumerate(pixels):
+        # 检查像素的透明度
+        if pixel != (0, 0, 0, 0):
+            x = i % image.width
+            y = i // image.width
+            x_set.append(x)
+            y_set.append(y)
+            # 如果透明度大于0，则将像素添加到新图像中
+            new_image.putpixel((x, y), pixel)
+
+    coordinates = (min(x_set), min(y_set), max(x_set), max(y_set))
+    crop_image = new_image.crop(coordinates)
+    # 将新图像转换为二进制流
+    output_bytes = io.BytesIO()
+    crop_image.save(output_bytes, format='PNG', quality=90)
+    output_bytes.seek(0)
+
+    return output_bytes.getvalue()
+
+    # else:
+    #     图像没有透明通道，返回原始二进制流
+    # return image_bytes
+
+
+# 一键白底
+def image_cutout(image_bytes):
+    image = image_procedure(image_bytes)
+    output_binary = remove(image)
+    output_binary = remove_transparent_pixels(output_binary)
+    return base64.b64encode(output_binary)
 
 
 function_map = {
@@ -595,12 +653,15 @@ function_map = {
     ReqType.GraduationCert: deal_graduation_and_degree_cert,
     ReqType.DegreeCert: deal_graduation_and_degree_cert
 }
+
 # if __name__ == '__main__':
 #     with open("../data/id_card/反面（子女）（唐言恢）_1.jpg", "rb") as img_file1, open(
 #             "../data/id_card/反面（子女）（唐言恢）_2.jpg", "rb") as img_file2:
 #         img1_bytes = img_file1.read()
 #         img2_bytes = img_file2.read()
-#         merge_images([img1_bytes, img2_bytes])
+#         resp = merge_images([img1_bytes, img2_bytes])
+#         print(resp)
+
 # 学位证测试
 # 毕业证测试
 # for root, dirs, files in os.walk("../data/学位证"):
