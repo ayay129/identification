@@ -186,7 +186,7 @@ async def identify(request: UrlData):
 
 @app.post("/image/merge")
 async def function(request: UrlData):
-    if not isinstance(request.url, list):
+    if not isinstance(request.url, list) or len(request.url) < 2:
         return InterfaceError(code=RETCODE.ERROR, message=err_msg[RETCODE.ERROR] + "params error")
     image_list = []
     for url in request.url:
