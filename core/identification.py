@@ -139,7 +139,7 @@ def deal_id_card(data):
         data = [data]
     for image_bytes in data:
         resp = baidu_client.multi_idcard(image=image_bytes, options={"detect_risk": "true", "detect_quality": "true",
-                                                                  "detect_direction": "true"})
+                                                                     "detect_direction": "true"})
         # 直接返回内部错误
         if resp.get("error_code"):
             return InterfaceError(code=resp.get("error_code"), message=resp.get("error_msg"))
@@ -544,6 +544,47 @@ def image_rotate(image_bytes):
     return rotated_image_binary
 
 
+# 图片合成
+def merge_images(images_list: list, num=2):
+    # 将二进制流转换为PIL图片对象
+    images = [Image.open(io.BytesIO(image)).convert("RGBA") for image in images_list[:num]]
+
+    # 创建一个新的白底图像，尺寸为两张输入图片的最大宽度和最大高度
+    total_height = int(sum(image.height for image in images) * 1.2)
+    max_width = int(max(image.width for image in images) * 1.2)
+    concatenated_image = Image.new("RGBA", (max_width, total_height), "white")
+
+    y_offset = int(total_height * 0.1)
+    for image in images:
+        x_offset = int((max_width - image.width) / 2)
+        concatenated_image.paste(image, (x_offset, y_offset))
+        y_offset += int(image.height + total_height * 0.05)
+    stream = io.BytesIO()
+    concatenated_image.save(stream, format="PNG", quality=90)
+    image_stream = stream.getvalue()
+    return base64.b64encode(image_stream)
+
+
+def tailor(image_bytes):
+    resp = doc_crop_enhance(image_bytes)
+    points = resp.get("points")
+    x_set = []
+    y_set = []
+    for point in points:
+        x_set.append(point["x"])
+        y_set.append(point["y"])
+    min_x = min(x_set)
+    min_y = min(y_set)
+    width = max(x_set) - min(x_set)
+    height = max(y_set) - min(y_set)
+    image = Image.open(io.BytesIO(image_bytes))
+    cropped_image = image.crop((min_y, min_x, min_y + height, min_x + width))
+    stream = io.BytesIO()
+    cropped_image.save(stream, format="PNG", quality=90)
+    image_bytes = stream.getvalue()
+    return image_bytes
+
+
 function_map = {
     ReqType.IdentityCard: deal_id_card,
     ReqType.BirthCert: deal_birth_cert,
@@ -555,25 +596,11 @@ function_map = {
     ReqType.DegreeCert: deal_graduation_and_degree_cert
 }
 # if __name__ == '__main__':
-# 毕业证测试
-# with open("../data/毕业证/本科毕业证（配偶）.png", "rb") as f:
-# with open("../data/毕业证/本科毕业证（配偶）_2.jpg", "rb") as f:
-# with open("../data/毕业证/黑龙江大学本科毕业证.jpg", "rb") as f:
-# with open("../data/毕业证/西安外国语大学本科毕业证.jpeg", "rb") as f:
-# with open("../data/毕业证/本科毕业证（配偶）（郭新峰）.jpg", "rb") as f:
-# with open("../data/毕业证/1689219407935.jpg", "rb") as f:
-#     data = f.read()
-# image_bytes = image_procedure(image_bytes=data)
-# deal_graduation_and_degree_cert(image_bytes)
-
-# with open("../data/毕业证/本科毕业证+学位证（王迪辛）.pdf", "rb") as f:
-# with open("../data/毕业证/西安交通大学本科毕业证.pdf", "rb") as f:
-# with open("../data/毕业证/硕士毕业证（配偶）（李蓉）.pdf", "rb") as f:
-#     # with open("../data/毕业证/本科毕业证+学位证（配偶从岩）.pdf", "rb") as f:
-#     data = f.read()
-# image_list = pdf2_to_image_stream(data, page=1)
-# resp = deal_graduation_and_degree_cert(image_list[0])
-# print(resp)
+#     with open("../data/id_card/反面（子女）（唐言恢）_1.jpg", "rb") as img_file1, open(
+#             "../data/id_card/反面（子女）（唐言恢）_2.jpg", "rb") as img_file2:
+#         img1_bytes = img_file1.read()
+#         img2_bytes = img_file2.read()
+#         merge_images([img1_bytes, img2_bytes])
 # 学位证测试
 # 毕业证测试
 # for root, dirs, files in os.walk("../data/学位证"):

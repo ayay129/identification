@@ -8,7 +8,7 @@
 from server.api_v1_0 import app
 from server.bodys import PostData, CardResponse, UrlData, BaseResponse, InterfaceError
 from core.const import RETCODE, RespType, err_msg, ReqType
-from core.identification import function_map, change_format,doc_crop_enhance
+from core.identification import function_map, change_format, doc_crop_enhance, merge_images
 from core.aigc_multi_class import distribute_file_class
 
 
@@ -182,3 +182,18 @@ async def identify(request: UrlData):
     except Exception as err:
         return InterfaceError(code=RETCODE.ERROR, message="{}->{}".format(err_msg[RETCODE.ERROR], err))
     return BaseResponse(code=RETCODE.OK, message=err_msg[RETCODE.OK], data=response_data)
+
+
+@app.post("/image/merge")
+async def function(request: UrlData):
+    if not isinstance(request.url, list):
+        return InterfaceError(code=RETCODE.ERROR, message=err_msg[RETCODE.ERROR] + "params error")
+    image_list = []
+    for url in request.url:
+        image_bytes = change_format(url)
+        image_list.append(image_bytes)
+    try:
+        response_data = merge_images(image_list)
+    except Exception as err:
+        return InterfaceError(code=RETCODE.ERROR, message="{}->{}".format(err_msg[RETCODE.ERROR], err))
+    return BaseResponse(code=RETCODE.OK, message=err_msg[RETCODE.OK], data={"image_b64": response_data})

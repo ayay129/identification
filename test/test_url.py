@@ -9,15 +9,15 @@ import requests
 
 # 身份证
 id_urls = [
-    "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1685621038948.pdf",   # 正反两页
-    "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1685624368732.jpg",   # 正面
+    "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1685621038948.pdf",  # 正反两页
+    "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1685624368732.jpg",  # 正面
     "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1689064162085.jpg",
     # "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1689236998244.png"  # 混贴
 ]
 # #
 # 港澳通行证
 hk_urls = [
-    "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1689232260827.pdf", # 正反两页
+    "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1689232260827.pdf",  # 正反两页
     "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1689232644168.jpg"
 ]
 #
@@ -133,7 +133,18 @@ def test_human_face():
     print(resp.text)
 
 
-if __name__ == '__main__':
+def test_merge_image():
+    urls = [
+        "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1685624368732.jpg",  # 正面
+        "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1689064162085.jpg"
+    ]
+    urls = [transfer(url) for url in urls]
+    resp = requests.post(url="http://127.0.0.1:52520/image/merge", json={"url": urls})
+    print(resp.text)
+
+
+# if __name__ == '__main__':
     # test_dis()
-    main()
+    # main()
+    # test_merge_image()
     # test_human_face()

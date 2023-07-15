@@ -9,7 +9,7 @@ from typing import Optional
 
 
 class UrlData(BaseModel):
-    url: str
+    url: str | list
 
 
 class PostData(UrlData):
