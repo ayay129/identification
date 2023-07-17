@@ -139,7 +139,8 @@ def test_merge_image():
         "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1689064162085.jpg"
     ]
     urls = [transfer(url) for url in urls]
-    resp = requests.post(url="http://127.0.0.1:52520/image/merge", json={"urls": urls,"input_type":1})
+    # resp = requests.post(url="http://172.18.18.13:52520/image/merge", json={"urls": urls,"input_type":1})
+    resp = requests.post(url="http://127.0.0.1:52520/image/merge", json={"urls": urls})
     print(resp.text)
 
 

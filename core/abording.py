@@ -3,7 +3,8 @@
 # @Time: 2023-07-15 18:16
 # @Author: Rangers
 # @Site: 
-# @File: gaoding.py
+# @File: abording.py
+# 废弃
 import time
 import base64
 import hmac
@@ -78,14 +79,14 @@ def transfer(url2t):
         return None
 
 
-if __name__ == '__main__':
-    from rembg import remove
-
-    with open("../data/近期证件照/近期证件照片（孙舒云）.jpeg", "rb") as f:
-        datas = f.read()
-    output = remove(datas)
-    with open("../test.png", "wb") as f:
-        f.write(output)
+# if __name__ == '__main__':
+#     from rembg import remove
+#
+#     with open("../data/近期证件照/近期证件照片（孙舒云）.jpeg", "rb") as f:
+#         datas = f.read()
+#     output = remove(datas)
+#     with open("../test.png", "wb") as f:
+#         f.write(output)
     # resp = goding.common(datas)
     # print(resp)
     # url = "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1689064069752.jpg"

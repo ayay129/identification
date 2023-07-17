@@ -14,7 +14,7 @@ class UrlData(BaseModel):
 
 class MergeData(BaseModel):
     urls: list
-    input_type: int
+    input_type: Optional[int]
 
 
 class PostData(UrlData):
