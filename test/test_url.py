@@ -134,13 +134,16 @@ def test_human_face():
 
 
 def test_merge_image():
-    urls = [
-        "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1685624368732.jpg",  # 正面
-        "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1689064162085.jpg"
-    ]
-    urls = [transfer(url) for url in urls]
+    # urls = [
+    #     "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1685624368732.jpg",  # 正面
+    #     "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1689064162085.jpg"
+    # ]
+    urls = "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1689438361493.png"
+
+    # urls = [transfer(url) for url in urls]
+    urls = transfer(urls)
     # resp = requests.post(url="http://172.18.18.13:52520/image/merge", json={"urls": urls,"input_type":1})
-    resp = requests.post(url="http://127.0.0.1:52520/image/merge", json={"urls": urls})
+    resp = requests.post(url="http://127.0.0.1:52520/image/white", json={"url": urls})
     print(resp.text)
 
 

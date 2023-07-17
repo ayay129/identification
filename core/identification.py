@@ -18,6 +18,8 @@ import platform
 from core.const import RespType, ReqType
 from server.bodys import InterfaceError
 from core.const import degree_header, birth_cert_header, passport_header, hk_macau_header
+from core.cut_api import cut_tool
+import json
 
 
 # pdf转图片
@@ -637,9 +639,12 @@ def remove_transparent_pixels(image_bytes):
 
 # 一键白底
 def image_cutout(image_bytes):
-    image = image_procedure(image_bytes)
-    output_binary = remove(image)
-    output_binary = remove_transparent_pixels(output_binary)
+    response = cut_tool.passport(image_bytes)
+    if response.status_code != 200:
+        raise Exception("抠图失败")
+    image_b64 = json.loads(response.text)["result"]
+    image = base64.b64decode(image_b64)
+    output_binary = remove_transparent_pixels(image)
     return base64.b64encode(output_binary)
 
 

@@ -3,7 +3,7 @@
 # @Time: 2023-07-15 18:16
 # @Author: Rangers
 # @Site: 
-# @File: abording.py
+# @File: cut_api.py
 # 废弃
 import time
 import base64
@@ -27,13 +27,13 @@ class GDApi(object):
         return image.width, image.height
 
     def _get_params(self, image_bytes, option):
-        # width, height = self._get_image_size(image_bytes)
+        width, height = self._get_image_size(image_bytes)
         params = {
             "file_base64": base64.b64encode(image_bytes).decode(),
-            # "width": width,
-            # "height": height,
-            # "background": "transparent",
-            # "result_type": "base64"
+            "width": width,
+            "height": height,
+            "background": "transparent",
+            "result_type": "base64"
             # "is_skip_crop": 1
         }
         if option:
@@ -69,17 +69,17 @@ class GDApi(object):
         return new_headers
 
 
-def transfer(url2t):
-    url = "https://test-crm.galaxy-immi.com/business/temp/temp-url?field={}".format(url2t)
-    response = requests.get(url=url)
-    try:
-        if 200 == response.status_code:
-            return response.json()['data']['url']
-    except Exception as err:
-        return None
+# def transfer(url2t):
+#     url = "https://test-crm.galaxy-immi.com/business/temp/temp-url?field={}".format(url2t)
+#     response = requests.get(url=url)
+#     try:
+#         if 200 == response.status_code:
+#             return response.json()['data']['url']
+#     except Exception as err:
+#         return None
 
 
-# if __name__ == '__main__':
+cut_tool = GDApi()
 #     from rembg import remove
 #
 #     with open("../data/近期证件照/近期证件照片（孙舒云）.jpeg", "rb") as f:
