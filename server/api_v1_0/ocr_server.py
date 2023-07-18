@@ -160,7 +160,7 @@ async def identity(request: UrlData):
     :param request: .url 图片url地址
     :return:
     """
-    image_bytes = change_format(url=request.url)
+    image_bytes = change_format(url=request.url, compress=False)
     if not image_bytes:
         return InterfaceError(code=RETCODE.CHANGE_FORMAT_ERROR, message=err_msg[RETCODE.CHANGE_FORMAT_ERROR])
     try:
@@ -207,6 +207,3 @@ async def function(request: UrlData):
     except Exception as err:
         return InterfaceError(code=RETCODE.ERROR, message="{}->{}".format(err_msg[RETCODE.ERROR], err))
     return BaseResponse(code=RETCODE.OK, message=err_msg[RETCODE.OK], data={"image_b64": response_data})
-
-
-

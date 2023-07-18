@@ -66,15 +66,18 @@ def pdf2_to_image_stream(image_bytes, page=2):
 
 
 # 文件格式转换逻辑
-def change_format(url):
+def change_format(url, compress=True):
     resp = requests.get(url)
     if resp.status_code != 200:
         return False
     image_bytes = resp.content
     url_path = urlparse(url).path
-    if url_path.lower().endswith((".png", ".jpg", ".jpeg", ".bmp", ".heic")):
+    if url_path.lower().endswith((".png", ".jpg", ".jpeg", ".bmp")):
         # 图片->转换大小
-        image = image_procedure(image_bytes)
+        if compress:
+            image = image_procedure(image_bytes)
+        else:
+            image = image_bytes
     elif url_path.lower().endswith(".pdf"):
         # pdf，转图片
         image = pdf2_to_image_stream(image_bytes)
