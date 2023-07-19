@@ -17,8 +17,9 @@ id_urls = [
 # #
 # 港澳通行证
 hk_urls = [
-    "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1689232260827.pdf",  # 正反两页
-    "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1689232644168.jpg"
+    # "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1689232260827.pdf",  # 正反两页
+    # "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1689232644168.jpg"
+    "https://upload.cdn.galaxy-immi.com/crm/test/files/10029/1689663431793.jpg"
 ]
 #
 # 出生证
@@ -94,8 +95,8 @@ def transfer(url2t):
 
 def main():
     for key, value in test_dict.items():
-        # if key !=1:
-        #     continue
+        if key !=4:
+            continue
         print(">>>{}".format(key))
         for url in value:
             links = transfer(url)
@@ -149,6 +150,6 @@ def test_merge_image():
 
 if __name__ == '__main__':
     # test_dis()
-    # main()
-    test_merge_image()
+    main()
+    # test_merge_image()
     # test_human_face()
