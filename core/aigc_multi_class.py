@@ -28,7 +28,7 @@ from pptx import Presentation
 # xls 59, zip 40, rar 10
 # 处理文件，调用接口，
 
-def pdf_to_image_page_stream(data_bytes, page=3):
+def pdf_to_image_page_stream(data_bytes, page=6):
     # pdf识别内容,使用通用接口,最多识别三也pdf
     if platform.system().lower() == "windows":
         images = convert_from_bytes(data_bytes, poppler_path="D:\\Program Files (x86)\\poppler-23.05.0\\Library\\bin")
