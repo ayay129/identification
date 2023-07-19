@@ -82,7 +82,7 @@ async def identity(request: PostData):
     elif request.input_type == ReqType.HkMacaoPermit:
         # 转二进制
         try:
-            response_data = function_map[ReqType.HkMacaoPermit](image_bytes)
+            response_data, is_back = function_map[ReqType.HkMacaoPermit](image_data)
         except Exception as err:
             # 识别异常
             return InterfaceError(code=RETCODE.ERROR, message="{}->{}".format(err_msg[RETCODE.ERROR], err))
@@ -91,21 +91,18 @@ async def identity(request: PostData):
             # 为空
             return InterfaceError(code=RETCODE.RECOGNIZE_EMPTY_ERROR,
                                   message=err_msg[RETCODE.RECOGNIZE_EMPTY_ERROR])
-        elif isinstance(response_data, InterfaceError):
-            # 返回内部异常
-            return response_data
         # 正常
-        if response_data == RespType.HkMacaoPermitBack:
+        if response_data and is_back:
+            # 混贴
+            return CardResponse(code=RETCODE.OK, type=RespType.HkMacaoPermit, message=err_msg[RETCODE.OK],
+                                data=response_data)
+        elif not response_data and is_back:
             # 反面
             return CardResponse(code=RETCODE.OK, type=RespType.HkMacaoPermitBack, message=err_msg[RETCODE.OK],
                                 data=None)
-        elif len(response_data.keys()) == 8:
+        else:
             # 正面
             return CardResponse(code=RETCODE.OK, type=RespType.HkMacaoPermitFront, message=err_msg[RETCODE.OK],
-                                data=response_data)
-        else:
-            # 混贴
-            return CardResponse(code=RETCODE.OK, type=RespType.HkMacaoPermit, message=err_msg[RETCODE.OK],
                                 data=response_data)
     # 5. 学位证 type 5
     elif request.input_type == ReqType.DegreeCertReport:

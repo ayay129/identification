@@ -184,7 +184,7 @@ def deal_id_card(data):
         for result in results:
             status = result["card_info"]["image_status"]
             # if status not in ["normal", "reverse_side","unknown"]:
-            if status in ["other_type_card","non_idcard"]:
+            if status in ["other_type_card", "non_idcard"]:
                 # return CardResponse(code=1, type=0, message="Recognize Failure. Cause {}".format(status))
                 continue
             card_type = result["card_info"]["card_type"]
@@ -309,29 +309,35 @@ def deal_HkMcau_permit2(image_bytes):
 
 
 # 港澳通行证
-def deal_HkMcau_permit(image_bytes):
-    response_data = {key: "" for key in hk_macau_header}
-    resp = baidu_client.HKMacauExitentrypermit(image=image_bytes)
-    if resp.get("error_code"):
-        return InterfaceError(code=resp.get("error_code"), message=resp.get("error_msg"))
-    results = resp["words_result"]
-    if not results:
-        return None
-    for key, value in results.items():
-        if not value:
-            return RespType.HkMacaoPermitBack
-        elif not value.get("words"):
-            return RespType.HkMacaoPermitBack
-    response_data["name"] = results["NameChn"].get("words")
-    response_data["pinyin"] = results["NameEng"].get("words")
-    response_data["birth"] = results["Birthday"].get("words")
-    response_data["gender"] = results["Sex"].get("words")
-    valid_date = results["ValidDate"]["words"].split("-")
-    response_data["termBegins"] = valid_date[0]
-    response_data["endOfTerm"] = valid_date[1]
-    response_data["issueLocation"] = results["Address"].get("words")
-    response_data["cardNum"] = results["CardNum"].get("words")
-    return response_data
+def deal_HkMcau_permit(image_list):
+    # response_data = {key: "" for key in hk_macau_header}
+    response_data = {}
+    is_back = False
+    for image_bytes in image_list:
+        resp = baidu_client.HKMacauExitentrypermit(image=image_bytes)
+        if resp.get("error_code"):
+            continue
+        results = resp["words_result"]
+        if not results:
+            continue
+        values = []
+        for key, value in results.items():
+            values.append(value)
+        if not all(values):
+            is_back = True
+        elif not all([value.get("words") for value in values]):
+            is_back = True
+        else:
+            response_data["name"] = results["NameChn"].get("words")
+            response_data["pinyin"] = results["NameEng"].get("words")
+            response_data["birth"] = results["Birthday"].get("words")
+            response_data["gender"] = results["Sex"].get("words")
+            valid_date = results["ValidDate"]["words"].split("-")
+            response_data["termBegins"] = valid_date[0]
+            response_data["endOfTerm"] = valid_date[1]
+            response_data["issueLocation"] = results["Address"].get("words")
+            response_data["cardNum"] = results["CardNum"].get("words")
+    return response_data, is_back
 
 
 # 处理各种格式学位认证报告

@@ -20,7 +20,8 @@ id_urls = [
 hk_urls = [
     # "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1689232260827.pdf",  # 正反两页
     # "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1689232644168.jpg"
-    "https://upload.cdn.galaxy-immi.com/crm/test/files/10029/1689663431793.jpg"
+    # "https://upload.cdn.galaxy-immi.com/crm/test/files/10029/1689663431793.jpg"
+    "https://upload.cdn.galaxy-immi.com/crm/test/files/10029/1689663806686.pdf"
 ]
 #
 # 出生证
@@ -30,7 +31,8 @@ born_urls = [
     # "https://upload.cdn.galaxy-immi.com/crm/production/files/7868/1660874135227.jpg",
     # "https://upload.cdn.galaxy-immi.com/crm/production/files/7870/1662184804891.jpg"
     # "https://upload.cdn.galaxy-immi.com/crm/production/files/14535/1688104083055.pdf"
-    "https://upload.cdn.galaxy-immi.com/crm/test/files/10844/1689669960798.pdf"
+    # "https://upload.cdn.galaxy-immi.com/crm/test/files/10844/1689669960798.pdf"
+    "https://upload.cdn.galaxy-immi.com/crm/test/files/10029/1689668281085.pdf"
 ]
 
 # 护照
@@ -97,11 +99,11 @@ def transfer(url2t):
 
 def main():
     for key, value in test_dict.items():
-        if key != 1:
+        if key != 4:
             continue
         print(">>>{}".format(key))
         for url in value:
-            links = transfer(url)
+            links =  transfer(url)
             print(links)
             if not links:
                 print(links)
