@@ -7,6 +7,10 @@
 import base64
 import io
 import re
+import sys
+
+if sys.platform == "windows":
+    import pyheif
 from config import baidu_client, baidu_image_client, baidu_face_client
 from rembg import remove
 import requests
@@ -78,6 +82,12 @@ def change_format(url, compress=True):
             image = image_procedure(image_bytes)
         else:
             image = image_bytes
+    elif url_path.lower().endswith("heic"):
+        image_source = heif_to_png(image_bytes)
+        if compress:
+            image = image_rotate(image_source)
+        else:
+            image = image_source
     elif url_path.lower().endswith(".pdf"):
         # pdf，转图片
         image = pdf2_to_image_stream(image_bytes)
@@ -87,6 +97,22 @@ def change_format(url, compress=True):
     else:
         return False
     return image
+
+
+def heif_to_png(heif_data):
+    heif_file = pyheif.read(heif_data)
+    image = Image.frombytes(
+        heif_file.mode,
+        heif_file.size,
+        heif_file.data,
+        "raw",
+        heif_file.mode,
+        heif_file.stride,
+    )
+    output = io.BytesIO()
+    image.save(output, format="PNG")
+    png_data = output.getvalue()
+    return png_data
 
 
 # 图片大小处理
