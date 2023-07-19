@@ -584,14 +584,14 @@ def merge_images(images_list: list, num=2, input_type=1):
         output_binary = remove(image)
         # 处理后为RGBA
         output_binary = remove_transparent_pixels(output_binary)
-        # if input_type == 1:
-        #     resp = baidu_client.multi_idcard(image=output_binary,
-        #                                      options={"detect_risk": "true", "detect_quality": "true",
-        #                                               "detect_direction": "true"})
-        #     direction = resp["words_result"][0]["card_info"]["direction"]
-        #     image_binary = rotate_id_card(output_binary, direction)
-        # else:
-        #     image_binary = output_binary
+        if input_type == 1:
+            resp = baidu_client.multi_idcard(image=output_binary,
+                                             options={"detect_risk": "true", "detect_quality": "true",
+                                                      "detect_direction": "true"})
+            direction = resp["words_result"][0]["card_info"]["direction"]
+            output_binary = rotate_id_card(output_binary, direction)
+        else:
+            output_binary = output_binary
         # images.append(Image.open(io.BytesIO(image_binary)).convert("RGBA"))
         images.append(Image.open(io.BytesIO(output_binary)))
 
