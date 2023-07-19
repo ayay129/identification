@@ -9,10 +9,11 @@ import requests
 
 # 身份证
 id_urls = [
-    "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1685621038948.pdf",  # 正反两页
-    "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1685624368732.jpg",  # 正面
-    "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1689064162085.jpg",
+    # "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1685621038948.pdf",  # 正反两页
+    # "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1685624368732.jpg",  # 正面
+    # "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1689064162085.jpg",
     # "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1689236998244.png"  # 混贴
+    "https://upload.cdn.galaxy-immi.com/crm/test/files/10029/1689681073159.pdf "
 ]
 # #
 # 港澳通行证
@@ -24,11 +25,12 @@ hk_urls = [
 #
 # 出生证
 born_urls = [
-    "https://upload.cdn.galaxy-immi.com/crm/test/files/10029/1686656152017.pdf",
-    "https://upload.cdn.galaxy-immi.com/crm/production/files/7861/1660620969527.pdf",
-    "https://upload.cdn.galaxy-immi.com/crm/production/files/7868/1660874135227.jpg",
-    "https://upload.cdn.galaxy-immi.com/crm/production/files/7870/1662184804891.jpg"
-    "https://upload.cdn.galaxy-immi.com/crm/production/files/14535/1688104083055.pdf"
+    # "https://upload.cdn.galaxy-immi.com/crm/test/files/10029/1686656152017.pdf",
+    # "https://upload.cdn.galaxy-immi.com/crm/production/files/7861/1660620969527.pdf",
+    # "https://upload.cdn.galaxy-immi.com/crm/production/files/7868/1660874135227.jpg",
+    # "https://upload.cdn.galaxy-immi.com/crm/production/files/7870/1662184804891.jpg"
+    # "https://upload.cdn.galaxy-immi.com/crm/production/files/14535/1688104083055.pdf"
+    "https://upload.cdn.galaxy-immi.com/crm/test/files/10844/1689669960798.pdf"
 ]
 
 # 护照
@@ -95,7 +97,7 @@ def transfer(url2t):
 
 def main():
     for key, value in test_dict.items():
-        if key != 4:
+        if key != 1:
             continue
         print(">>>{}".format(key))
         for url in value:
@@ -147,6 +149,6 @@ def test_merge_image():
 
 if __name__ == '__main__':
     # test_dis()
-    # main()
-    test_merge_image()
+    main()
+    # test_merge_image()
     # test_human_face()

@@ -49,6 +49,7 @@ def pdf_to_image_stream(image_bytes, page=1):
     concatenated_image.save(stream, format="PNG", quality=90)
     image_stream = stream.getvalue()
     image_stream = image_procedure(image_bytes=image_stream)
+    image_stream = remove_transparent_pixels(image_stream, target_color=(255, 255, 255, 255))
     return image_stream
 
 
@@ -65,6 +66,8 @@ def pdf2_to_image_stream(image_bytes, page=2):
         image.save(stream, format="PNG", quality=90)
         image_stream = stream.getvalue()
         image_stream = image_procedure(image_bytes=image_stream)
+        # image_stream = remove(image_stream)
+        # image_stream = remove_transparent_pixels(image_stream, target_color=(255, 255, 255, 255))
         images_data.append(image_stream)
     return images_data
 
@@ -174,18 +177,20 @@ def deal_id_card(data):
                                                                      "detect_direction": "true"})
         # 直接返回内部错误
         if resp.get("error_code"):
-            return InterfaceError(code=resp.get("error_code"), message=resp.get("error_msg"))
+            continue
         results = resp["words_result"]
         if not results:
-            return None
+            continue
         for result in results:
             status = result["card_info"]["image_status"]
             # if status not in ["normal", "reverse_side","unknown"]:
-            if status in ["other_type_card"]:
+            if status in ["other_type_card","non_idcard"]:
                 # return CardResponse(code=1, type=0, message="Recognize Failure. Cause {}".format(status))
-                return None
+                continue
             card_type = result["card_info"]["card_type"]
             card_result = result["card_result"]
+            if not card_result:
+                continue
             if card_type == "idcard_front":
                 # 正面
                 response_data["name"] = card_result["姓名"]["words"]
@@ -199,6 +204,8 @@ def deal_id_card(data):
                 response_data["issuingAuthority"] = card_result["签发机关"]["words"]
                 response_data["termBegins"] = card_result["签发日期"]["words"]
                 response_data["endOfTerm"] = card_result["失效日期"]["words"]
+    if not response_data:
+        return None
     return response_data
 
 
@@ -625,7 +632,7 @@ def rotate_id_card(image_bytes, direction=-1):
 
 
 # 去除透明像素
-def remove_transparent_pixels(image_bytes):
+def remove_transparent_pixels(image_bytes, target_color=(0, 0, 0, 0)):
     # 将二进制流转换为PIL图片对象
     image = Image.open(io.BytesIO(image_bytes))
 
@@ -644,7 +651,7 @@ def remove_transparent_pixels(image_bytes):
     # 遍历图像的每个像素
     for i, pixel in enumerate(pixels):
         # 检查像素的透明度
-        if pixel != (0, 0, 0, 0):
+        if pixel != target_color:
             x = i % image.width
             y = i // image.width
             x_set.append(x)
