@@ -15,6 +15,11 @@ id_urls = [
     # "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1689236998244.png"  # 混贴
     "https://upload.cdn.galaxy-immi.com/crm/test/files/10029/1689681073159.pdf "
 ]
+heic = {
+    1: [
+        "https://upload.cdn.galaxy-immi.com/crm/test/files/1689837931469.heic?x-oss-process=image/crop,x_0,y_0,w_794,h_529&OSSAccessKeyId=LTAI4G23YzQkpcybpJwSnPSk&Expires=506951442900&Signature=z5YQeWi131Iv0v%2FJIL2qNaQNjUY%3D&v=1689838143"
+    ]
+}
 # #
 # 港澳通行证
 hk_urls = [
@@ -22,7 +27,8 @@ hk_urls = [
     # "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1689232644168.jpg"
     # "https://upload.cdn.galaxy-immi.com/crm/test/files/10029/1689663431793.jpg"
     # "https://upload.cdn.galaxy-immi.com/crm/test/files/10029/1689663806686.pdf"
-    "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1689232260827.pdf "
+    # "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1689232260827.pdf "
+    "https://upload.cdn.galaxy-immi.com/crm/production/files/15523/1689856565210.jpg"
 ]
 #
 # 出生证
@@ -116,6 +122,18 @@ def main():
             print(resp.text)
 
 
+def heic_test():
+    for key, value in heic.items():
+        if key != 1:
+            continue
+        for url in value:
+            resp = requests.post(url="http://172.18.18.13:52520/document/identification", json={
+                "url": url,
+                "input_type": key
+            })
+            print(resp.text)
+
+
 def test_dis():
     for url in dismantle:
         links = transfer(url)
@@ -151,14 +169,15 @@ def test_merge_image():
 
 
 def test_email_read():
-    url = "https://upload.cdn.galaxy-immi.com/crm/file/email/attach/43655_1.pdf?OSSAccessKeyId=LTAI5tGMZ7J75CmXjiuANNcm&Expires=1689841494&Signature=vGXIO2ZfVysqKHw7ni4%2F2sTAk1Y%3D&v=1689841194"
-    resp = requests.post(url="http://127.0.0.1:52520/email/read", json={"url": url})
+    url = "https://upload.cdn.galaxy-immi.com/crm/file/email/attach/43720_1.pdf?OSSAccessKeyId=LTAI5tGMZ7J75CmXjiuANNcm&Expires=1689842414&Signature=Vc24eerToPmG%2FyCadyxx3z1RgrE%3D&v=1689842114"
+    resp = requests.post(url="http://172.18.18.13:52520/email/read", json={"url": url})
     print(resp.text)
 
 
 if __name__ == '__main__':
-    test_email_read()
+    # test_email_read()
     # test_dis()
-    # main()
+    main()
     # test_merge_image()
     # test_human_face()
+    # heic_test()

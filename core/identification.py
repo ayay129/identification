@@ -9,7 +9,7 @@ import io
 import re
 import sys
 
-if sys.platform == "windows":
+if sys.platform != "win32":
     import pyheif
 from config import baidu_client, baidu_image_client, baidu_face_client
 from rembg import remove
@@ -311,6 +311,8 @@ def deal_HkMcau_permit2(image_bytes):
 # 港澳通行证
 def deal_HkMcau_permit(image_list):
     # response_data = {key: "" for key in hk_macau_header}
+    if not isinstance(image_list, list):
+        image_list = [image_list]
     response_data = {}
     is_back = False
     for image_bytes in image_list:
