@@ -12,6 +12,11 @@ class UrlData(BaseModel):
     url: str | list
 
 
+class ConvertReq(UrlData):
+    url: str
+    convert: Optional[bool]
+
+
 class MergeData(BaseModel):
     urls: list
     input_type: Optional[int]

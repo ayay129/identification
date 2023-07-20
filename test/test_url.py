@@ -21,7 +21,8 @@ hk_urls = [
     # "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1689232260827.pdf",  # 正反两页
     # "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1689232644168.jpg"
     # "https://upload.cdn.galaxy-immi.com/crm/test/files/10029/1689663431793.jpg"
-    "https://upload.cdn.galaxy-immi.com/crm/test/files/10029/1689663806686.pdf"
+    # "https://upload.cdn.galaxy-immi.com/crm/test/files/10029/1689663806686.pdf"
+    "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1689232260827.pdf "
 ]
 #
 # 出生证
@@ -103,7 +104,7 @@ def main():
             continue
         print(">>>{}".format(key))
         for url in value:
-            links =  transfer(url)
+            links = transfer(url)
             print(links)
             if not links:
                 print(links)
@@ -149,8 +150,15 @@ def test_merge_image():
     print(resp.text)
 
 
+def test_email_read():
+    url = "https://upload.cdn.galaxy-immi.com/crm/file/email/attach/43655_1.pdf?OSSAccessKeyId=LTAI5tGMZ7J75CmXjiuANNcm&Expires=1689841494&Signature=vGXIO2ZfVysqKHw7ni4%2F2sTAk1Y%3D&v=1689841194"
+    resp = requests.post(url="http://127.0.0.1:52520/email/read", json={"url": url})
+    print(resp.text)
+
+
 if __name__ == '__main__':
+    test_email_read()
     # test_dis()
-    main()
+    # main()
     # test_merge_image()
     # test_human_face()

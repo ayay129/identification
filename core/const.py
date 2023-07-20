@@ -29,6 +29,7 @@ class RETCODE:
     CHANGE_FORMAT_ERROR = 3001
     RECOGNIZE_EMPTY_ERROR = 3002
     OUT_OF_SUPPORT = 2
+    GET_ERROR = 6001
 
 
 err_msg = {
@@ -36,7 +37,8 @@ err_msg = {
     RETCODE.ERROR: "识别异常",
     RETCODE.OUT_OF_SUPPORT: "超出支持范围",
     RETCODE.CHANGE_FORMAT_ERROR: "格式转换失败",
-    RETCODE.RECOGNIZE_EMPTY_ERROR: "识别结果为空"
+    RETCODE.RECOGNIZE_EMPTY_ERROR: "识别结果为空",
+    RETCODE.GET_ERROR: "GET获取地址{}的二进制流失败"
 }
 
 

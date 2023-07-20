@@ -214,8 +214,8 @@ class App(tk.Tk):
         return thre
 
 
-if __name__ == '__main__':
-    app = App()
-    app.mainloop()
+# if __name__ == '__main__':
+#     app = App()
+#     app.mainloop()
     # image = Image.open("../data/imgs.png")
     # app.enhance(image)
