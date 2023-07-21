@@ -127,7 +127,7 @@ def heic_test():
         if key != 1:
             continue
         for url in value:
-            resp = requests.post(url="http://172.18.18.13:52520/document/identification", json={
+            resp = requests.post(url="http://127.0.0.1:52520/document/identification", json={
                 "url": url,
                 "input_type": key
             })
@@ -177,7 +177,7 @@ def test_email_read():
 if __name__ == '__main__':
     # test_email_read()
     # test_dis()
-    main()
+    # main()
     # test_merge_image()
     # test_human_face()
-    # heic_test()
+    heic_test()

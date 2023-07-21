@@ -79,18 +79,12 @@ def change_format(url, compress=True):
         return False
     image_bytes = resp.content
     url_path = urlparse(url).path
-    if url_path.lower().endswith((".png", ".jpg", ".jpeg", ".bmp")):
+    if url_path.lower().endswith((".png", ".jpg", ".jpeg", ".bmp", "heic")):
         # 图片->转换大小
         if compress:
             image = image_procedure(image_bytes)
         else:
             image = image_bytes
-    elif url_path.lower().endswith("heic"):
-        image_source = heif_to_png(image_bytes)
-        if compress:
-            image = image_rotate(image_source)
-        else:
-            image = image_source
     elif url_path.lower().endswith(".pdf"):
         # pdf，转图片
         image = pdf2_to_image_stream(image_bytes)
