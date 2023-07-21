@@ -205,7 +205,7 @@ def judge_url_class(url, data_bytes):
         data = pdf_to_image_page_stream(data_bytes)
     elif url_path.lower().endswith((".pptx", ".ppt")):
         data = ppt_or_pptx2content(data_bytes)
-    elif url_path.lower().endswith((".jpg", "png")):
+    elif url_path.lower().endswith((".jpg", "png","heic")):
         data = image_stream_deal(data_bytes)
     elif url_path.lower().endswith(".txt"):
         data = txt2content(data_bytes)

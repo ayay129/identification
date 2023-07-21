@@ -18,7 +18,8 @@ id_urls = [
 heic = {
     1: [
         "https://upload.cdn.galaxy-immi.com/crm/test/files/1689837931469.heic?x-oss-process=image/crop,x_0,y_0,w_794,h_529&OSSAccessKeyId=LTAI4G23YzQkpcybpJwSnPSk&Expires=506951442900&Signature=z5YQeWi131Iv0v%2FJIL2qNaQNjUY%3D&v=1689838143"
-    ]
+
+   ]
 }
 # #
 # 港澳通行证
@@ -81,15 +82,17 @@ test_dict = {
 }
 
 dismantle = {
-    "https://upload.cdn.galaxy-immi.com/crm/test/files/10416/1688355236313.jpg",
-    "https://upload.cdn.galaxy-immi.com/crm/test/files/10416/1688355244577.xls",
-    "https://upload.cdn.galaxy-immi.com/crm/test/files/10416/1688355437563.pdf",
-    "https://upload.cdn.galaxy-immi.com/crm/test/files/10416/1688355456810.pptx",
-    "https://upload.cdn.galaxy-immi.com/crm/test/files/10416/1688355426891.docx",
-    "https://upload.cdn.galaxy-immi.com/crm/test/files/10416/1688355415260.ppt",
-    "https://upload.cdn.galaxy-immi.com/crm/test/files/10416/1688366693905.doc",
-    "https://upload.cdn.galaxy-immi.com/crm/test/files/10416/1688366700252.png",
-    "https://upload.cdn.galaxy-immi.com/crm/test/files/10416/1688366705399.xlsx"
+    # "https://upload.cdn.galaxy-immi.com/crm/test/files/10416/1688355236313.jpg",
+    # "https://upload.cdn.galaxy-immi.com/crm/test/files/10416/1688355244577.xls",
+    # "https://upload.cdn.galaxy-immi.com/crm/test/files/10416/1688355437563.pdf",
+    # "https://upload.cdn.galaxy-immi.com/crm/test/files/10416/1688355456810.pptx",
+    # "https://upload.cdn.galaxy-immi.com/crm/test/files/10416/1688355426891.docx",
+    # "https://upload.cdn.galaxy-immi.com/crm/test/files/10416/1688355415260.ppt",
+    # "https://upload.cdn.galaxy-immi.com/crm/test/files/10416/1688366693905.doc",
+    # "https://upload.cdn.galaxy-immi.com/crm/test/files/10416/1688366700252.png",
+    # "https://upload.cdn.galaxy-immi.com/crm/test/files/10416/1688366705399.xlsx"
+    "https://upload.cdn.galaxy-immi.com/crm/test/files/1689837931469.heic?x-oss-process=image/crop,x_0,y_0,w_794,h_529&OSSAccessKeyId=LTAI4G23YzQkpcybpJwSnPSk&Expires=506951442900&Signature=z5YQeWi131Iv0v%2FJIL2qNaQNjUY%3D&v=1689838143"
+
 }
 
 
@@ -127,7 +130,7 @@ def heic_test():
         if key != 1:
             continue
         for url in value:
-            resp = requests.post(url="http://127.0.0.1:52520/document/identification", json={
+            resp = requests.post(url="http://172.18.45.66:52520/document/identification", json={
                 "url": url,
                 "input_type": key
             })
@@ -136,7 +139,8 @@ def heic_test():
 
 def test_dis():
     for url in dismantle:
-        links = transfer(url)
+        # links = transfer(url)
+        links = url
         if not links:
             continue
         resp = requests.post(url="http://127.0.0.1:52520/document/general", json={
@@ -176,8 +180,8 @@ def test_email_read():
 
 if __name__ == '__main__':
     # test_email_read()
-    # test_dis()
+    test_dis()
     # main()
     # test_merge_image()
     # test_human_face()
-    heic_test()
+    # heic_test()
