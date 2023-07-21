@@ -282,7 +282,7 @@ def deal_passport(data, image=True):
 
 def deal_HkMcau_permit2(image_bytes):
     response_data = {key: "" for key in hk_macau_header}
-    resp = baidu_client.accurate(image_bytes)
+    resp = baidu_client.basicAccurate(image_bytes)
     if resp.get("error_code"):
         return InterfaceError(code=resp.get("error_code"), message=resp.get("error_msg"))
     results = resp["words_result"]
@@ -344,7 +344,7 @@ def deal_HkMcau_permit(image_list):
 
 # 处理各种格式学位认证报告
 def deal_degree_report(image_bytes):
-    resp = baidu_client.accurate(image_bytes)
+    resp = baidu_client.basicAccurate(image_bytes)
     if resp.get("error_code"):
         return InterfaceError(code=resp.get("error_code"), message=resp.get("error_msg"))
     results = resp.get("words_result")
@@ -533,7 +533,7 @@ def deal_graduation_and_degree_cert(image_bytes, depth=0):
     if depth >= 4:
         return RecursionError("90度旋转{}次均无法识别证件内容".format(depth))
     response_data = {}
-    resp = baidu_client.accurate(image_bytes)
+    resp = baidu_client.basicAccurate(image_bytes)
     words_result = resp.get("words_result")
     long_strings = [words["words"] for words in words_result]
     long_string = "|".join(long_strings)
