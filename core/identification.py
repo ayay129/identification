@@ -713,8 +713,4 @@ function_map = {
     ReqType.Business_licence: business_license
 }
 
-if __name__ == '__main__':
-    with open("../data/business licence/0.pdf", "rb") as f:
-        data = f.read()
-    image_bytes = pdf2_to_image_stream(data)
-    business_license(image_bytes[0])
+
