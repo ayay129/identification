@@ -4,6 +4,7 @@
 # @Author: Rangers
 # @Site: AIGC生产线，多类型文件识别
 # @File: aigc_multi_class.py
+from collections import OrderedDict
 import os
 import platform
 import subprocess
@@ -88,14 +89,38 @@ def docx2content(data_bytes, page=None):
     document = Document(io.BytesIO(data_bytes))
     if page:
         paragraphs = document.paragraphs[:page]
+        tables = document.tables[:page]
     else:
         paragraphs = document.paragraphs
+        tables = document.tables
     data = []
     for index, paragraph in enumerate(paragraphs):
         if paragraph.text:
             data.append(paragraph.text)
     result = "\n".join(data)
-    return result
+
+    table_data = []
+    for table in tables:
+        # 创建一个二维列表来保存表格数据
+        table_rows = []
+
+        # 遍历表格的所有行
+        for row in table.rows:
+            # 创建一个列表来保存行数据
+            row_data = []
+
+            # 遍历行中的所有单元格
+            for cell in list(OrderedDict.fromkeys(row.cells)):
+                # 将单元格内容添加到行数据列表中
+                row_data.append(cell.text)
+
+            # 将行数据添加到表格数据列表中
+            table_rows.append("|\t".join(row_data))
+
+        # 将表格数据添加到最终结果中
+        table_data.append("\n".join(table_rows))
+    response = result + "\n\n\n" + "\n\n".join(table_data)
+    return response
 
 
 def xlsx2content(data_bytes):
@@ -205,7 +230,7 @@ def judge_url_class(url, data_bytes):
         data = pdf_to_image_page_stream(data_bytes)
     elif url_path.lower().endswith((".pptx", ".ppt")):
         data = ppt_or_pptx2content(data_bytes)
-    elif url_path.lower().endswith((".jpg", "png","heic")):
+    elif url_path.lower().endswith((".jpg", "png", "heic")):
         data = image_stream_deal(data_bytes)
     elif url_path.lower().endswith(".txt"):
         data = txt2content(data_bytes)
@@ -236,10 +261,10 @@ def test():
     #             data = judge_url_class(file_name, data_bytes)
     #         print(data)
     #         print("-" * 100)
-    file_name ="../data/dismantle/附件A (1).pdf"
-    with open(file_name,"rb") as f:
+    file_name = "../data/dismantle/1688638432281.docx"
+    with open(file_name, "rb") as f:
         data_bytes = f.read()
-    data = judge_url_class(file_name,data_bytes)
+    data = judge_url_class(file_name, data_bytes)
     print(data)
 
 
@@ -251,5 +276,37 @@ def distribute_file_class(url):
     return data
 
 
-if __name__ == '__main__':
-    test()
+def read_word_table(data_bytes):
+    # 创建一个空列表来保存表格数据
+    table_data = []
+
+    # 打开Word文档
+    doc = Document(io.BytesIO(data_bytes))
+
+    # 遍历文档中的所有表格
+    for table in doc.tables:
+        # 创建一个二维列表来保存表格数据
+        table_rows = []
+
+        # 遍历表格的所有行
+        for row in table.rows:
+            # 创建一个列表来保存行数据
+            row_data = []
+
+            # 遍历行中的所有单元格
+            for cell in row.cells:
+                # 将单元格内容添加到行数据列表中
+                row_data.append(cell.text)
+
+            # 将行数据添加到表格数据列表中
+            table_rows.append(row_data)
+
+        # 将表格数据添加到最终结果中
+        table_data.append(table_rows)
+
+    return table_data
+
+
+# if __name__ == '__main__':
+#     test()
+#
