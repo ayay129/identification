@@ -145,7 +145,14 @@ async def identity(request: PostData):
             return InterfaceError(code=RETCODE.ERROR, message="{}->{}".format(err_msg[RETCODE.ERROR], err))
         return CardResponse(code=RETCODE.OK, type=RespType.DegreeCert, message=err_msg[RETCODE.OK],
                             data=response_data)
-    # 非范围内
+    # 营业执照
+    elif request.input_type == ReqType.Business_licence:
+        try:
+            response_data = function_map[ReqType.Business_licence](image_bytes)
+        except Exception as err:
+            return InterfaceError(code=RETCODE.ERROR, message="{}->{}".format(err_msg[RETCODE.ERROR], err))
+        return CardResponse(code=RETCODE.OK, type=RespType.Business_licence, message=err_msg[RETCODE.OK],
+                            data=response_data)
     else:
         return InterfaceError(code=RETCODE.OUT_OF_SUPPORT, message=err_msg[RETCODE.OUT_OF_SUPPORT])
 

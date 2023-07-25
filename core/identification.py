@@ -686,6 +686,21 @@ def image_cutout(image_bytes):
     return base64.b64encode(output_binary)
 
 
+# 营业制造
+def business_license(image_bytes):
+    resp = baidu_client.businessLicense(image_bytes)
+    response_data = get_words(resp)
+    return response_data
+
+
+def get_words(body: dict):
+    result = body.get("words_result")
+    response = {}
+    for key, value in result.items():
+        response[key] = value.get("words")
+    return response
+
+
 function_map = {
     ReqType.IdentityCard: deal_id_card,
     ReqType.BirthCert: deal_birth_cert,
@@ -694,31 +709,12 @@ function_map = {
     ReqType.DegreeCertReport: deal_degree_report,
     ReqType.Marriage: deal_marriage_cert,
     ReqType.GraduationCert: deal_graduation_and_degree_cert,
-    ReqType.DegreeCert: deal_graduation_and_degree_cert
+    ReqType.DegreeCert: deal_graduation_and_degree_cert,
+    ReqType.Business_licence: business_license
 }
 
-# if __name__ == '__main__':
-#     with open("../data/id_card/反面（子女）（唐言恢）_1.jpg", "rb") as img_file1, open(
-#             "../data/id_card/反面（子女）（唐言恢）_2.jpg", "rb") as img_file2:
-#         img1_bytes = img_file1.read()
-#         img2_bytes = img_file2.read()
-#         resp = merge_images([img1_bytes, img2_bytes])
-#         print(resp)
-
-# 学位证测试
-# 毕业证测试
-# for root, dirs, files in os.walk("../data/学位证"):
-#     for name in files:
-#         file_name = "%s/%s" % (root, name)
-#         print(file_name)
-#         with open(file_name, "rb") as f:
-#             image = f.read()
-#         if file_name.lower().endswith((".png", ".jpg", ".jpeg", ".bmp")):
-#             # 图片->转换大小
-#             images = image_procedure(image)
-#         elif file_name.lower().endswith(".pdf"):
-#             # pdf，转图片
-#             images = pdf2_to_image_stream(image, page=1)
-#         image = images[0] if isinstance(images, list) else images
-#         resp = deal_graduation_and_degree_cert(image)
-#         print(resp)
+if __name__ == '__main__':
+    with open("../data/business licence/0.pdf", "rb") as f:
+        data = f.read()
+    image_bytes = pdf2_to_image_stream(data)
+    business_license(image_bytes[0])

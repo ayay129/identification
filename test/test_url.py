@@ -18,9 +18,9 @@ id_urls = [
 heic = {
     1: [
         "https://upload.cdn.galaxy-immi.com/crm/test/files/1689837931469.heic?x-oss-process=image/crop,x_0,y_0,w_794,h_529&OSSAccessKeyId=LTAI4G23YzQkpcybpJwSnPSk&Expires=506951442900&Signature=z5YQeWi131Iv0v%2FJIL2qNaQNjUY%3D&v=1689838143"
-
-   ]
+    ]
 }
+
 # #
 # 港澳通行证
 hk_urls = [
@@ -68,8 +68,17 @@ degree_cert_urls = [
 
 # 毕业证
 graduation_cert_urls = [
-    "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1689219407935.jpg",
+    "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1689219407935.jpg"
 ]
+
+
+business_licence = [
+    "http://upload.cdn.galaxy-immi.com/crm/production/files/1634868746010.pdf",
+    "http://upload.cdn.galaxy-immi.com/crm/production/files/21YH8274/1636596800959.pdf",
+    "http://upload.cdn.galaxy-immi.com/crm/production/files/21YH8274/1636621597963.pdf",
+    "http://upload.cdn.galaxy-immi.com/crm/production/files/1636103858312.pdf"
+]
+
 test_dict = {
     1: id_urls,
     2: born_urls,
@@ -78,7 +87,8 @@ test_dict = {
     5: degree_urls,
     10: marriage_urls,
     11: graduation_cert_urls,
-    12: degree_cert_urls
+    12: degree_cert_urls,
+    13: business_licence
 }
 
 dismantle = {
@@ -91,7 +101,10 @@ dismantle = {
     # "https://upload.cdn.galaxy-immi.com/crm/test/files/10416/1688366693905.doc",
     # "https://upload.cdn.galaxy-immi.com/crm/test/files/10416/1688366700252.png",
     # "https://upload.cdn.galaxy-immi.com/crm/test/files/10416/1688366705399.xlsx"
-    "https://upload.cdn.galaxy-immi.com/crm/test/files/1689837931469.heic?x-oss-process=image/crop,x_0,y_0,w_794,h_529&OSSAccessKeyId=LTAI4G23YzQkpcybpJwSnPSk&Expires=506951442900&Signature=z5YQeWi131Iv0v%2FJIL2qNaQNjUY%3D&v=1689838143"
+    # "https://upload.cdn.galaxy-immi.com/crm/test/files/1689837931469.heic?x-oss-process=image/crop,x_0,y_0,w_794,h_529&OSSAccessKeyId=LTAI4G23YzQkpcybpJwSnPSk&Expires=506951442900&Signature=z5YQeWi131Iv0v%2FJIL2qNaQNjUY%3D&v=1689838143"
+    # "https://upload.cdn.galaxy-immi.com/crm/test/files/1690180283749.pdf"
+    # "https://upload.cdn.galaxy-immi.com/crm/test/files/1690180321172.ppt"
+    "http://galaxy-immi-mp.oss-cn-shenzhen.aliyuncs.com/crm/test/files/attach/202210/3120011117269.pdf"
 
 }
 
@@ -109,8 +122,8 @@ def transfer(url2t):
 
 def main():
     for key, value in test_dict.items():
-        # if key != 4:
-        #     continue
+        if key != 13:
+            continue
         print(">>>{}".format(key))
         for url in value:
             links = transfer(url)
@@ -139,10 +152,11 @@ def heic_test():
 
 def test_dis():
     for url in dismantle:
-        # links = transfer(url)
-        links = url
+        links = transfer(url)
+        # links = url
         if not links:
             continue
+        # resp = requests.post(url="http://172.18.45.66:52520/document/general", json={
         resp = requests.post(url="http://127.0.0.1:52520/document/general", json={
             "url": links
         })
@@ -157,7 +171,10 @@ def test_human_face():
     second_link = transfer(second_url)
 
     resp = requests.post(url="http://127.0.0.1:52520/face/compare",
-                         json={"first_image_url": first_link, "second_image_url": second_link})
+                         json={
+                             "first_image_url": first_link,
+                             "second_image_url": second_link
+                         })
     print(resp.text)
 
 
@@ -174,14 +191,14 @@ def test_merge_image():
 
 def test_email_read():
     url = "https://upload.cdn.galaxy-immi.com/crm/file/email/attach/43720_1.pdf?OSSAccessKeyId=LTAI5tGMZ7J75CmXjiuANNcm&Expires=1689842414&Signature=Vc24eerToPmG%2FyCadyxx3z1RgrE%3D&v=1689842114"
-    resp = requests.post(url="http://172.18.18.13:52520/email/read", json={"url": url})
+    resp = requests.post(url="http://127.0.0.1:52520/email/read", json={"url": url})
     print(resp.text)
 
 
 if __name__ == '__main__':
     # test_email_read()
-    test_dis()
-    # main()
+    # test_dis()
+    main()
     # test_merge_image()
     # test_human_face()
     # heic_test()

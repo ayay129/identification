@@ -51,6 +51,7 @@ class ReqType:
     Marriage = 10
     GraduationCert = 11
     DegreeCert = 12
+    Business_licence = 13
 
 
 class RespType(ReqType):
