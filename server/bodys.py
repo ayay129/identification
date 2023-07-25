@@ -10,6 +10,7 @@ from typing import Optional
 
 class UrlData(BaseModel):
     url: str | list
+    compress: bool = False
 
 
 class ConvertReq(UrlData):

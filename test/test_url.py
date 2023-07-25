@@ -71,7 +71,6 @@ graduation_cert_urls = [
     "https://upload.cdn.galaxy-immi.com/crm/test/files/9602/1689219407935.jpg"
 ]
 
-
 business_licence = [
     "http://upload.cdn.galaxy-immi.com/crm/production/files/1634868746010.pdf",
     "http://upload.cdn.galaxy-immi.com/crm/production/files/21YH8274/1636596800959.pdf",
@@ -195,10 +194,18 @@ def test_email_read():
     print(resp.text)
 
 
+def correct_image():
+    url = "https://upload.cdn.galaxy-immi.com/crm/test/files/10619/1690270315924.jpg"
+    url = transfer(url)
+    resp = requests.post(url="http://127.0.0.1:52520/image/correct", json={"url": url,"compress":True})
+    print(resp.text)
+
+
 if __name__ == '__main__':
+    correct_image()
     # test_email_read()
     # test_dis()
-    main()
+    # main()
     # test_merge_image()
     # test_human_face()
     # heic_test()

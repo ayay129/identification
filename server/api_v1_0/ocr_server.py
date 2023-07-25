@@ -164,7 +164,7 @@ async def identity(request: UrlData):
     :param request: .url 图片url地址
     :return:
     """
-    image_bytes = change_format(url=request.url, compress=False)
+    image_bytes = change_format(url=request.url, compress=request.compress)
     if not image_bytes:
         return InterfaceError(code=RETCODE.CHANGE_FORMAT_ERROR, message=err_msg[RETCODE.CHANGE_FORMAT_ERROR])
     try:
