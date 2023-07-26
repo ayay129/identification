@@ -230,7 +230,7 @@ def judge_url_class(url, data_bytes):
         data = pdf_to_image_page_stream(data_bytes)
     elif url_path.lower().endswith((".pptx", ".ppt")):
         data = ppt_or_pptx2content(data_bytes)
-    elif url_path.lower().endswith((".jpg", "png", "heic")):
+    elif url_path.lower().endswith((".png", ".jpg", ".jpeg", ".bmp", "heic")):
         data = image_stream_deal(data_bytes)
     elif url_path.lower().endswith(".txt"):
         data = txt2content(data_bytes)
@@ -305,7 +305,6 @@ def read_word_table(data_bytes):
         table_data.append(table_rows)
 
     return table_data
-
 
 # if __name__ == '__main__':
 #     test()
