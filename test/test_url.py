@@ -189,7 +189,9 @@ def test_merge_image():
 
 
 def test_email_read():
-    url = "https://upload.cdn.galaxy-immi.com/crm/file/email/attach/43720_1.pdf?OSSAccessKeyId=LTAI5tGMZ7J75CmXjiuANNcm&Expires=1689842414&Signature=Vc24eerToPmG%2FyCadyxx3z1RgrE%3D&v=1689842114"
+    # url = "https://upload.cdn.galaxy-immi.com/crm/file/email/attach/43720_1.pdf?OSSAccessKeyId=LTAI5tGMZ7J75CmXjiuANNcm&Expires=1689842414&Signature=Vc24eerToPmG%2FyCadyxx3z1RgrE%3D&v=1689842114"
+    url = "https://upload.cdn.galaxy-immi.com/crm/file/email/attach/38716_1.pdf"
+    url = transfer(url)
     resp = requests.post(url="http://127.0.0.1:52520/email/read", json={"url": url})
     print(resp.text)
 
@@ -202,8 +204,8 @@ def correct_image():
 
 
 if __name__ == '__main__':
-    correct_image()
-    # test_email_read()
+    # correct_image()
+    test_email_read()
     # test_dis()
     # main()
     # test_merge_image()

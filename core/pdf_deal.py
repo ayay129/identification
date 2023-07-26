@@ -4,9 +4,11 @@
 # @Author: Rangers
 # @Site: 
 # @File: pdf_deal.py
+import io
 
 import fitz
 from zhconv import convert
+from config import baidu_client
 
 
 def has_images_in_pdf(binary_pdf):
@@ -42,26 +44,20 @@ def extract_text_from_pdf(binary_pdf, is_convert=True):
     return pdf_text
 
 
-def extract_images_from_pdf(binary_pdf):
-    pdf_document = fitz.open(stream=binary_pdf)
-    num_pages = pdf_document.page_count
+def norm_pdf_image_deal(image_bytes,is_convert=True):
+    resp = baidu_client.basicAccurate(image_bytes)
+    words_result = resp.get("words_result")
+    if not words_result:
+        raise Exception("error format")
+    data = []
+    for obj in words_result:
+        words = obj.get("words")
+        if not words:
+            continue
+        if is_convert:
+            text = convert(words, "zh-hans")
+            data.append(text)
+        else:
+            data.append(words)
+    return "\n".join(data)
 
-    images = []
-
-    for page_num in range(num_pages):
-        page = pdf_document.load_page(page_num)
-        img_list = page.get_images(full=True)
-
-        for img in img_list:
-            images.append(img)
-
-    pdf_document.close()
-    return images
-
-
-if __name__ == '__main__':
-    with open("../data/agree/其他.pdf", "rb") as f:
-        data_bytes = f.read()
-    # resp = extract_images_from_pdf(data_bytes)
-    resp = extract_text_from_pdf(data_bytes)
-    print(resp)
