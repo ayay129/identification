@@ -22,6 +22,7 @@ from openpyxl import load_workbook
 from xlrd import open_workbook
 from server.bodys import InterfaceError
 from pptx import Presentation
+from core.pdf_deal import has_images_in_pdf, extract_text_from_pdf
 
 
 # docx:6390, pdf 4007, jpg 1970,doc 1934,png 1543,
@@ -227,7 +228,10 @@ def judge_url_class(url, data_bytes):
     elif url_path.lower().endswith(".doc"):
         data = doc2content(data_bytes)
     elif url_path.lower().endswith(".pdf"):
-        data = pdf_to_image_page_stream(data_bytes)
+        if has_images_in_pdf(data_bytes):
+            data = pdf_to_image_page_stream(data_bytes)
+        else:
+            data = extract_text_from_pdf(binary_pdf=data_bytes)
     elif url_path.lower().endswith((".pptx", ".ppt")):
         data = ppt_or_pptx2content(data_bytes)
     elif url_path.lower().endswith((".png", ".jpg", ".jpeg", ".bmp", "heic")):
@@ -261,7 +265,7 @@ def test():
     #             data = judge_url_class(file_name, data_bytes)
     #         print(data)
     #         print("-" * 100)
-    file_name = "../data/dismantle/1688638432281.docx"
+    file_name = "../data/dismantle/英文简历1.pdf"
     with open(file_name, "rb") as f:
         data_bytes = f.read()
     data = judge_url_class(file_name, data_bytes)
