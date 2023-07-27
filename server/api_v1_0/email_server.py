@@ -11,6 +11,7 @@ from core.identification import pdf2_to_image_stream
 from core.const import ReqType, RETCODE, err_msg, RespType
 from server.bodys import ConvertReq
 from core.pdf_deal import extract_text_from_pdf, has_images_in_pdf, norm_pdf_image_deal
+from fitz.fitz import EmptyFileError
 import requests
 
 
@@ -19,7 +20,11 @@ def email(request: ConvertReq):
     resp = requests.get(url=request.url)
     if resp.status_code != 200:
         return InterfaceError(code=RETCODE.GET_ERROR, message=err_msg[RETCODE.GET_ERROR].format(request.url))
-    if has_images_in_pdf(binary_pdf=resp.content):
+    try:
+        has_image = has_images_in_pdf(binary_pdf=resp.content)
+    except EmptyFileError as err:
+        return InterfaceError(code=RETCODE.ERROR, message=err_msg[RETCODE.ERROR] + "文件为空")
+    if has_image:
         # pdf中有图片
         data = []
         images = pdf2_to_image_stream(resp.content)
