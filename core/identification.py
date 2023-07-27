@@ -526,7 +526,7 @@ def face_compare(id_card_bytes, recent_bytes):
 def deal_graduation_and_degree_cert(image_bytes, depth=0):
     # 递归处理
     if depth >= 4:
-        return RecursionError("90度旋转{}次均无法识别证件内容".format(depth))
+        raise RecursionError("90度旋转{}次均无法识别证件内容".format(depth))
     response_data = {}
     resp = baidu_client.basicAccurate(image_bytes)
     words_result = resp.get("words_result")
