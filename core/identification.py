@@ -654,6 +654,8 @@ def remove_transparent_pixels(image_bytes, target_color=(0, 0, 0, 0)):
     # 遍历图像的每个像素
     for i, pixel in enumerate(pixels):
         # 检查像素的透明度
+        if pixel[-1] < 200:
+            continue
         if pixel != target_color:
             x = i % image.width
             y = i // image.width
