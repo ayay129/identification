@@ -535,14 +535,14 @@ def deal_graduation_and_degree_cert(image_bytes, depth=0):
     if re.findall(r"毕业证书", long_string):
         name_list = [r"学生\|([\u4e00-\u9fa5]+?)\|", r"学生([\u4e00-\u9fa5]+?)\|", r"\|([\u4e00-\u9fa5]{2,4})\|性别"]
         level_list = [r"(本科)|(硕士)|(博士)", r"(本\|科)|(硕\|士)|(博\|士)"]
-        college_list = [r"校名[:：\s](.*大学)", r"[校\|名]+[:：\s](.*大学)", r"校名[:：\s](.*大學)",
+        college_list = [r"校名[:：\s](.*大学|.*学院|.*大學)", r"[校\|名]+[:：\s](.*大学|.*大學|.*学院)", r"校名[:：\s](.*大學)",
                         r"校\|名[:：\s](.*大學)",
                         r".*\|(.*大學)\|"]
     elif re.findall(r"学位证书", long_string):
         # '王迪辛|,男，|一九七六|年十二月生。自|一九九四|年九月至一九九九年六月|在|浙江大学|信息与电子工程系|信息电子技术|完成了*年制本科学习计划，业已毕业。|经审核符合《中华人民共和国学位条例》|的规定，授予|ヱ|学学士学位。|学士学位证书|浙江大学|学位评定委员会主席|(普通高等教育本科毕业生)|潘鹤|1999年6月25日|证书编号：103314991197'
         name_list = [r"([\u4e00-\u9fa5]{2,5})[\|]*[，,]*[男女系][，,]*.*?\|", r"([\u4e00-\u9fa5]{2,4})[男女]"]
         level_list = [r"(学士)|(硕士)|(博士)", r"(学\|士)|(硕\|士)|(博\|士)"]
-        college_list = [r"在*([\u4e00-\u9fa5]{2,6}大学)"]
+        college_list = [r"在*([\u4e00-\u9fa5]{2,6}大學|[\u4e00-\u9fa5]{2,6}学院|[\u4e00-\u9fa5]{2,6}大学)"]
     else:
         rotate_image_bytes = image_rotate(image_bytes)
         return deal_graduation_and_degree_cert(rotate_image_bytes, depth=depth + 1)
@@ -715,5 +715,3 @@ function_map = {
     ReqType.DegreeCert: deal_graduation_and_degree_cert,
     ReqType.Business_licence: business_license
 }
-
-
