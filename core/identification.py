@@ -592,7 +592,7 @@ def merge_images(images_list: list, num=2, input_type=1):
     for image in images_list[:num]:
         # 存在透明
         output_binary = remove(image)
-        # 处理后为RGBA
+        # 处理后为RGBA,返回RGB,JPEG
         output_binary = remove_transparent_pixels(output_binary)
         if input_type == 1:
             resp = baidu_client.multi_idcard(image=output_binary,
@@ -608,7 +608,8 @@ def merge_images(images_list: list, num=2, input_type=1):
     # 创建一个新的白底图像，尺寸为两张输入图片的最大宽度和最大高度
     total_height = int(sum(image.height for image in images) * 1.2)
     max_width = int(max(image.width for image in images) * 1.2)
-    concatenated_image = Image.new("RGBA", (max_width, total_height), "white")
+    # RGB
+    concatenated_image = Image.new("RGB", (max_width, total_height), "white")
 
     y_offset = int(total_height * 0.1)
     for image in images:
@@ -617,7 +618,7 @@ def merge_images(images_list: list, num=2, input_type=1):
         y_offset += int(image.height + total_height * 0.05)
     # 转换为RGB
     stream = io.BytesIO()
-    concatenated_image.save(stream, format="PNG", quality=90)
+    concatenated_image.save(stream, format="JPEG", quality=90)
     image_stream = stream.getvalue()
     return base64.b64encode(image_stream)
 
@@ -654,7 +655,7 @@ def remove_transparent_pixels(image_bytes, target_color=(0, 0, 0, 0)):
     # 遍历图像的每个像素
     for i, pixel in enumerate(pixels):
         # 检查像素的透明度
-        if pixel[-1] < 200:
+        if pixel[-1] < 100:
             continue
         if pixel != target_color:
             x = i % image.width
@@ -666,9 +667,11 @@ def remove_transparent_pixels(image_bytes, target_color=(0, 0, 0, 0)):
 
     coordinates = (min(x_set), min(y_set), max(x_set), max(y_set))
     crop_image = new_image.crop(coordinates)
+    # 转换回RGB
+    crop_image = crop_image.convert("RGB")
     # 将新图像转换为二进制流
     output_bytes = io.BytesIO()
-    crop_image.save(output_bytes, format='PNG', quality=90)
+    crop_image.save(output_bytes, format='JPEG', quality=90)
     output_bytes.seek(0)
 
     return output_bytes.getvalue()
