@@ -9,7 +9,7 @@ import io
 import fitz
 from zhconv import convert
 from config import baidu_client
-
+from core.identification import pdf2_to_image_stream
 
 def has_images_in_pdf(binary_pdf):
     pdf_document = fitz.open(stream=binary_pdf)
@@ -44,7 +44,7 @@ def extract_text_from_pdf(binary_pdf, is_convert=True):
     return pdf_text
 
 
-def norm_pdf_image_deal(image_bytes,is_convert=True):
+def norm_pdf_image_deal(image_bytes, is_convert=True):
     resp = baidu_client.basicAccurate(image_bytes)
     words_result = resp.get("words_result")
     if not words_result:
